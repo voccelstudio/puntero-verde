@@ -14,7 +14,12 @@ function renderPerformance() {
 
     const { totalProgress } = calcOverallProgress();
     const { totalLabor } = getTotals();
-    const orders = p.execution.materialOrders || [];
+    const schedules = Object.values(p.execution.schedules || {});
+    const tasksDone = schedules.filter(s => s.status === 'done').length;
+    const tasksInProgress = schedules.filter(s => s.status === 'progress').length;
+    const tasksPending = schedules.filter(s => s.status === 'pending').length;
+    const tasksTotal = schedules.length;
+    const tasksPct = tasksTotal > 0 ? Math.round(tasksDone / tasksTotal * 100) : 0;
 
     // Pagos a contratistas asignados a este proyecto
     const assignedContractorIds = new Set(
@@ -45,15 +50,6 @@ function renderPerformance() {
         }
     }
 
-    const ordersDelivered = orders.filter(o => o.status === 'delivered').length;
-    const ordersPct = orders.length > 0 ? Math.round(ordersDelivered / orders.length * 100) : 0;
-
-    // Estadísticas de Jornaleros
-    const jornaleros = state.jornaleros || [];
-    const totalJorActivos = jornaleros.filter(j => j.isActive !== false).length;
-    const totalJornadas = jornaleros.reduce((s, j) => s + (j.jornadas || []).length, 0);
-    const totalJornalesDevengado = jornaleros.reduce((s, j) => s + (j.jornadas || []).reduce((ss, jd) => ss + (jd.monto || 0), 0), 0);
-
     el.innerHTML = `
     <div class="prices-wrap">
         <h2 class="sec-lbl">Indicadores Clave de Desempeño (KPIs)</h2>
@@ -81,11 +77,11 @@ function renderPerformance() {
                 </div>
 
                 <div class="stat-row" style="margin-top:20px">
-                    <div class="stat-lbl">Suministros (Órdenes entregadas)</div>
+                    <div class="stat-lbl">Tareas Completadas</div>
                     <div class="stat-bar-bg">
-                        <div class="stat-bar" style="width:${ordersPct}%; background:var(--ok)"></div>
+                        <div class="stat-bar" style="width:${tasksPct}%; background:var(--ok)"></div>
                     </div>
-                    <div class="stat-val">${ordersPct}%</div>
+                    <div class="stat-val">${tasksPct}%</div>
                 </div>
 
                 <div class="info-box" style="margin-top:25px; background:rgba(96,165,250,0.1)">
@@ -95,23 +91,23 @@ function renderPerformance() {
         </div>
 
         <div class="card" style="margin-top:20px">
-            <h3 class="sec-lbl">👷 Mano de Obra - Jornaleros</h3>
+            <h3 class="sec-lbl">📋 Estado de Tareas</h3>
             <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-top:12px">
                 <div style="background:var(--sur2); padding:14px; border-radius:var(--rad); text-align:center">
-                    <div style="font-size:1.3rem; font-weight:800; color:var(--acc)">${totalJorActivos}</div>
-                    <div style="font-size:0.7rem; color:var(--tx3)">Jornaleros Activos</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:var(--ok)">${tasksDone}</div>
+                    <div style="font-size:0.7rem; color:var(--tx3)">Completadas</div>
                 </div>
                 <div style="background:var(--sur2); padding:14px; border-radius:var(--rad); text-align:center">
-                    <div style="font-size:1.3rem; font-weight:800; color:var(--acc)">${totalJornadas}</div>
-                    <div style="font-size:0.7rem; color:var(--tx3)">Jornadas Registradas</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:var(--blue)">${tasksInProgress}</div>
+                    <div style="font-size:0.7rem; color:var(--tx3)">En Curso</div>
                 </div>
                 <div style="background:var(--sur2); padding:14px; border-radius:var(--rad); text-align:center">
-                    <div style="font-size:1.1rem; font-weight:800; color:var(--err)">${fmt(totalJornalesDevengado)}</div>
-                    <div style="font-size:0.7rem; color:var(--tx3)">Total Devengado</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:var(--tx2)">${tasksPending}</div>
+                    <div style="font-size:0.7rem; color:var(--tx3)">Pendientes</div>
                 </div>
                 <div style="background:var(--sur2); padding:14px; border-radius:var(--rad); text-align:center">
-                    <div style="font-size:1.1rem; font-weight:800">${totalJornadas > 0 ? fmt(Math.round(totalJornalesDevengado / totalJornadas)) : '—'}</div>
-                    <div style="font-size:0.7rem; color:var(--tx3)">Promedio por Jornada</div>
+                    <div style="font-size:1.1rem; font-weight:800; color:var(--acc)">${tasksTotal}</div>
+                    <div style="font-size:0.7rem; color:var(--tx3)">Total Tareas</div>
                 </div>
             </div>
         </div>

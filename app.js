@@ -211,11 +211,6 @@ let state = {
   profile: { company: "", professional: "", matricula: "", ruc: "", phone: "", email: "", address: "", instagram: "", whatsapp: "", website: "" },
   contractors: [], // Base de datos de contratistas
   ownTeam: [],     // [NUEVO] Personal propio global
-  roles: {         // [NUEVO] Valores base de jornales
-    "Ayudante": 80000,
-    "Oficial": 130000,
-    "Puntero": 180000
-  },
   schedules: {},   
   projectStartDate: null, 
   dailyLogs: [],   
@@ -232,10 +227,8 @@ let state = {
   ],
   logoDataUrl: "",
   signDataUrl: "",
-  isPro: true, 
   suppliers: [],   
   paymentAlarms: [], 
-  materialOrders: [], 
   finances: { income: [], expenses: [] }, 
   performance: { goals: [] }, 
   documents: [], 
@@ -245,7 +238,7 @@ let state = {
   activeProjectId: null, 
   activeAdendaId: null,  
   migratedV6: false, 
-  migratedV7: false, // [NUEVO] Flag para geoloc y jornaleros
+  migratedV7: false, // [NUEVO] Flag para geoloc
 };
 
 // Load state from localStorage (fast cache)
@@ -256,7 +249,6 @@ try {
   } else {
     loadDemoProject();
   }
-  state.isPro = true;
   migrateToMultiProject();
 } catch (e) { }
 
@@ -323,7 +315,6 @@ function migrateToMultiProject() {
       target.schedules = state.schedules || {};
       target.dailyLogs = state.dailyLogs || [];
       target.projectStartDate = state.projectStartDate || null;
-      target.materialOrders = [];
       target.finances = { income: [], expenses: [] };
     }
   }
@@ -338,13 +329,8 @@ function migrateToV8() {
     state.projects.forEach(p => {
         if (!p.location) p.location = { lat: null, lng: null, address: "", mapUrl: "" };
         if (!p.execution) p.execution = {};
-        if (!p.execution.dayWorkers) p.execution.dayWorkers = [];
-        if (!p.execution.laborPayments) p.execution.laborPayments = [];
     });
     if (!state.ownTeam) state.ownTeam = [];
-    if (!state.roles) {
-        state.roles = { "Ayudante": 80000, "Oficial": 130000, "Puntero": 180000 };
-    }
     state.migratedV7 = true;
 }
 
@@ -566,6 +552,13 @@ function migrateToV9() {
     save();
 }
 
+function migrateToV10() {
+    state._globalContractorsCache = [];
+    state._globalContractorsLastSync = null;
+    state.migratedV9 = true;
+    save();
+}
+
 /**
  * GESTIÓN DE MULTI-PROYECTOS Y ADENDAS
  */
@@ -586,21 +579,11 @@ function renderGlobalDashboard() {
     const activeProjects = state.projects.filter(p => !p.archived);
 
     state.projects.forEach(p => {
-        (p.execution.materialOrders || []).forEach(o => {
-            if (!o.isPaid) {
-                urgentItems.push({ project: p.name, type: '💰 Pago Materiales', desc: `Proveedor: ${o.supplier}`, amount: o.total, date: o.date, color: 'var(--err)' });
-            }
-        });
         Object.entries(p.execution.schedules || {}).forEach(([itemId, sch]) => {
             if (sch.status !== 'done' && sch.end && new Date(sch.end) < today) {
                 const adenda = p.budgets.find(b => b.items.find(i => i.id == itemId));
                 const item = adenda ? adenda.items.find(i => i.id == itemId) : { name: 'Item desconocido' };
-                urgentItems.push({ project: p.name, type: '⚠️ Retraso Obra', desc: item.name, amount: null, date: sch.end, color: 'var(--lab)' });
-            }
-        });
-        (p.execution.aftercare || []).forEach(claim => {
-            if (claim.status !== 'resolved') {
-                urgentItems.push({ project: p.name, type: '🔧 Garantía', desc: claim.title, amount: null, date: claim.date, color: 'var(--acc)' });
+                urgentItems.push({ project: p.name, type: '⚠️ Retraso', desc: item.name, amount: null, date: sch.end, color: 'var(--lab)' });
             }
         });
     });
@@ -636,30 +619,27 @@ function renderGlobalDashboard() {
                     <div class="proj-dash-actions">
                         <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','budget')">📋 Presupuesto</button>
                         <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','schedule')">📅 Cronograma</button>
-                        <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','ot')">📄 OT</button>
                         <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','contractors')">👷 Contratistas</button>
                         <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','documents')">📁 Documentos</button>
-                        <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','materials')">🧱 Materiales</button>
                         <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','finances')">💰 Finanzas</button>
                         <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','logs')">📔 Libro</button>
-                        <button class="btn sm" onclick="event.stopPropagation(); openProjectSection('${pid}','jornaleros')">👤 Jornaleros</button>
                     </div>
                 </div>`;
             }).join("") || '<div class="empty" style="padding:40px; text-align:center">No hay proyectos activos. <button class="btn sm primary" onclick="showModal(\'new_project\')">+ Crear proyecto</button></div>'}
         </div>
 
         <div class="dash-grid" style="margin-top:24px">
-            <div class="dash-card" style="border-top:4px solid var(--err)">
-                <div class="dash-num">${urgentItems.filter(i => i.type.includes('💰')).length}</div>
-                <div class="dash-lbl">Pagos Pendientes</div>
-            </div>
             <div class="dash-card" style="border-top:4px solid var(--lab)">
                 <div class="dash-num">${urgentItems.filter(i => i.type.includes('⚠️')).length}</div>
                 <div class="dash-lbl">Retrasos Detectados</div>
             </div>
-            <div class="dash-card" style="border-top:4px solid var(--acc)">
-                <div class="dash-num">${urgentItems.filter(i => i.type.includes('🔧')).length}</div>
-                <div class="dash-lbl">Garantía / Reclamos</div>
+            <div class="dash-card" style="border-top:4px solid var(--blue)">
+                <div class="dash-num">${activeProjects.reduce((s, p) => s + Object.values(p.execution.schedules || {}).filter(sch => sch.status === 'progress').length, 0)}</div>
+                <div class="dash-lbl">Tareas en Curso</div>
+            </div>
+            <div class="dash-card" style="border-top:4px solid var(--ok)">
+                <div class="dash-num">${activeProjects.reduce((s, p) => s + (p.execution.dailyLogs || []).length, 0)}</div>
+                <div class="dash-lbl">Partes Registrados</div>
             </div>
         </div>
 
@@ -702,196 +682,6 @@ function switchProjectFromName(name) {
     if (p) switchProject(p.id);
 }
 
-function renderAftercare() {
-    const el = document.getElementById("section-aftercare");
-    if (!el) return;
-    const p = getActiveProject();
-    if (!p) { el.innerHTML = "<div class='empty'>Seleccioná un proyecto.</div>"; return; }
-
-    if (!p.execution.aftercare) p.execution.aftercare = [];
-
-    let h = `
-    <div class="prices-wrap">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
-            <div>
-                <h2 class="sec-lbl" style="margin:0">GARANTÍA Y AJUSTES (POSTVENTA)</h2>
-                <p style="color:var(--tx3); font-size:0.9rem">Seguimiento de reclamos e intervenciones: <strong>${p.name}</strong></p>
-            </div>
-            <button class="btn primary" onclick="showModal('new_claim')">+ Nuevo Reclamo / Tarea</button>
-        </div>
-
-        <div class="con-grid">
-            ${p.execution.aftercare.map((c, idx) => `
-                <div class="card" style="border-left: 4px solid ${c.status === 'resolved' ? 'var(--ok)' : 'var(--warn)'}">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-                        <span class="iva-badge" style="background:var(--sur2); color:var(--tx2)">${formatDatePY(c.date)}</span>
-                        <span class="iva-badge" style="background:${c.status === 'resolved' ? 'var(--ok)' : 'var(--warn)'}; color:white">${c.status === 'resolved' ? 'RESUELTO' : 'PENDIENTE'}</span>
-                    </div>
-                    <h3 style="margin:0 0 8px 0; font-size:1.1rem">${c.title}</h3>
-                    <p style="font-size:0.875rem; color:var(--tx2); margin-bottom:12px">${c.desc}</p>
-                    <div style="display:flex; gap:10px">
-                        ${c.status !== 'resolved' ? `<button class="btn sm ok-btn" onclick="updateClaimStatus(${idx}, 'resolved')">Marcar Resuelto</button>` : ''}
-                        <button class="btn sm danger" onclick="deleteClaim(${idx})">✕ Eliminar</button>
-                    </div>
-                </div>
-            `).join("") || '<div class="fullcol empty">No hay reclamos registrados.</div>'}
-        </div>
-    </div>`;
-
-    el.innerHTML = h;
-}
-
-function renderComputoSection() {
-    const el = document.getElementById("section-computo");
-    if (!el) return;
-    const p = getActiveProject();
-    if (!p) { el.innerHTML = "<div class='empty'>Seleccioná un proyecto.</div>"; return; }
-
-    const mats = calcMaterials();
-    
-    let h = `
-    <div class="prices-wrap">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px">
-            <div>
-                <h2 class="sec-lbl" style="margin:0">CÓMPUTO MÉTRICO DE MATERIALES</h2>
-                <p style="color:var(--tx3); font-size:0.9rem">Cantidades totales necesarias para la obra: <strong>${p.name}</strong></p>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap">
-                <button class="btn sm" onclick="printComputo()">🖨️ PDF</button>
-                <button class="btn sm" onclick="exportComputoCSV()">📄 CSV</button>
-                <button class="btn sm" onclick="setSection('budget')">← Volver</button>
-            </div>
-        </div>
-
-        <div class="info-box" style="margin-bottom:20px">
-            <p>Este cómputo suma automáticamente los materiales de <strong>todas las adendas</strong> del proyecto. Ideal para planificación de compras generales.</p>
-        </div>
-
-        <div class="mat-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px">
-            ${mats.map(m => {
-                const isCem = m.name.toLowerCase().includes("cemento");
-                const bolsas = isCem ? Math.ceil(m.qty / 50) : null;
-                const qty = Number.isInteger(m.qty) ? m.qty : fmtD(m.qty, 2);
-                return `
-                <div class="mat-card" style="background:var(--sur); padding:15px; border-radius:var(--rad); border:1px solid var(--bor)">
-                    <div class="mat-name" style="font-weight:700; font-size:1rem; margin-bottom:8px">${m.name}</div>
-                    <div class="mat-qty" style="font-size:1.2rem; color:var(--acc)"><strong>${qty}</strong> ${m.unit}</div>
-                    ${bolsas ? `<div class="mat-bags" style="font-size:0.8rem; color:var(--tx3); margin-top:5px">≈ ${bolsas} bolsas de 50kg</div>` : ""}
-                </div>`;
-            }).join("") || '<div class="fullcol empty">No hay materiales calculados. Agregá rubros al presupuesto.</div>'}
-        </div>
-    </div>`;
-
-    el.innerHTML = h;
-}
-
-function printComputo() {
-    const p = getActiveProject();
-    if (!p) return toast("Sin proyecto activo", false);
-    const mats = calcMaterials();
-    if (mats.length === 0) return toast("No hay materiales calculados", false);
-
-    const totalQty = mats.reduce((s, m) => s + m.qty, 0);
-
-    let rows = '';
-    mats.forEach((m, i) => {
-        const qty = Number.isInteger(m.qty) ? m.qty : fmtD(m.qty, 2);
-        rows += `<tr><td style="text-align:center;width:40px">${i + 1}</td><td>${escapeHtml(m.name)}</td><td style="text-align:center;width:80px">${qty}</td><td style="text-align:center;width:80px">${escapeHtml(m.unit)}</td></tr>`;
-    });
-
-    const win = window.open("", "_blank");
-    if (!win) { toast("Permití ventanas emergentes para imprimir", false); return; }
-
-    const date = formatDatePY(new Date());
-    win.document.write('<!DOCTYPE html><html><head><title>Cómputo de Materiales - ' + escapeHtml(p.name) + '</title>');
-    win.document.write('<style>');
-    win.document.write('@page{size:A4 landscape;margin:12mm}');
-    win.document.write('*{box-sizing:border-box}');
-    win.document.write('body{font-family:"Barlow","Segoe UI",sans-serif;color:#1e293b;padding:0;margin:0;background:#fff}');
-    win.document.write('.wrap{max-width:100%;margin:0 auto;padding:20px}');
-    win.document.write('.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:3px solid #1e293b;padding-bottom:12px}');
-    win.document.write('.hdr h1{font-size:1.3rem;font-weight:800;text-transform:uppercase;margin:0}');
-    win.document.write('.info{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;margin-bottom:16px;font-size:.85rem;color:#475569;padding:10px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0}');
-    win.document.write('table{width:100%;border-collapse:collapse;font-size:.8rem}');
-    win.document.write('th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left}');
-    win.document.write('th{background:#f1f5f9;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}');
-    win.document.write('.tot-row td{background:#e2e8f0;font-weight:800;font-size:.85rem}');
-    win.document.write('.foot{text-align:center;margin-top:20px;font-size:.7rem;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px}');
-    win.document.write('@media print{body{padding:0}.wrap{padding:0}}');
-    win.document.write('</style></head><body>');
-    win.document.write('<div class="wrap">');
-    win.document.write('<div class="hdr"><h1>Cómputo de Materiales</h1><span style="font-weight:700;color:#475569">' + escapeHtml(p.name) + '</span></div>');
-    win.document.write('<div class="info"><div><strong>Proyecto:</strong> ' + escapeHtml(p.name) + '</div><div><strong>Cliente:</strong> ' + escapeHtml(p.client || '—') + '</div><div><strong>Materiales:</strong> ' + mats.length + ' ítems</div><div><strong>Emisión:</strong> ' + date + '</div></div>');
-    win.document.write('<table><thead><tr><th style="width:40px">N°</th><th>Material</th><th style="width:80px">Cantidad</th><th style="width:80px">Unidad</th></tr></thead><tbody>' + rows + '</tbody></table>');
-    win.document.write('<div class="foot">Documento generado por Puntero — ' + date + '</div>');
-    win.document.write('</div>');
-    win.document.write('<script>window.onload=function(){setTimeout(function(){window.print();window.close()},300)}<\/script>');
-    win.document.write('</body></html>');
-    win.document.close();
-}
-
-function exportComputoCSV() {
-    const p = getActiveProject();
-    if (!p) return toast("Sin proyecto activo", false);
-    const mats = calcMaterials();
-    if (mats.length === 0) return toast("No hay materiales calculados", false);
-
-    let csv = 'Material,Cantidad,Unidad\r\n';
-    mats.forEach(m => {
-        const qty = Number.isInteger(m.qty) ? m.qty : fmtD(m.qty, 2);
-        csv += '"' + m.name.replace(/"/g, '""') + '",' + qty + ',"' + m.unit + '"\r\n';
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'computo_' + p.name.replace(/[^a-zA-Z0-9]/g, '_') + '.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
-    toast('CSV descargado ✓');
-}
-
-window.modals = window.modals || {};
-window.modals.new_claim = () => `
-    <div class="modal-title">Registrar Intervención / Reclamo</div>
-    <div style="display:flex; flex-direction:column; gap:12px">
-        <input id="cl-title" placeholder="Título (ej: Filtración en baño social)">
-        ${dateInputPY('cl-date', todayISO(), '', 'width:100%')}
-        <textarea id="cl-desc" placeholder="Descripción del problema y acción a tomar..." rows="4"></textarea>
-    </div>
-    <div class="modal-acts">
-        <button class="btn" onclick="closeModal()">Cancelar</button>
-        <button class="btn primary" onclick="saveClaim()">Registrar 🔧</button>
-    </div>`;
-
-function saveClaim() {
-    const p = getActiveProject();
-    const title = document.getElementById("cl-title").value.trim();
-    const date = document.getElementById("cl-date").value;
-    const desc = document.getElementById("cl-desc").value;
-    if (!title) return toast("Título requerido", false);
-    if (!p.execution.aftercare) p.execution.aftercare = [];
-    p.execution.aftercare.push({ title, date, desc, status: 'pending', id: Date.now() });
-    save(); closeModal(); renderAftercare();
-    toast("Reclamo registrado ✓");
-}
-
-function updateClaimStatus(idx, status) {
-    const p = getActiveProject();
-    p.execution.aftercare[idx].status = status;
-    save(); renderAftercare();
-    toast("Estado actualizado ✓");
-}
-
-function deleteClaim(idx) {
-    if (!confirm("¿Eliminar este registro?")) return;
-    const p = getActiveProject();
-    p.execution.aftercare.splice(idx, 1);
-    save(); renderAftercare();
-}
-
 function migrateToV7() {
     if (state.projects && state.projects.length > 0) return;
     
@@ -918,10 +708,8 @@ function migrateToV7() {
         execution: {
             schedules: state.schedules || {},
             dailyLogs: state.dailyLogs || [],
-            materialOrders: state.materialOrders || [],
             finances: state.finances || { income: [], expenses: [] },
             documents: state.documents || [],
-            aftercare: [],
             projectStartDate: state.projectStartDate || "",
             projectEndDate: ""
         }
@@ -1209,7 +997,7 @@ window.addEventListener("beforeunload", function () {
 
 // ── WORKSPACE / COLLABORATION ──────────────────────────────────────────
 var _workspaceListenerUnsub = null;
-var WORKSPACE_FIELDS = ['projects','contractors','suppliers','jornaleros','roles','contratos'];
+var WORKSPACE_FIELDS = ['projects','contractors','suppliers','contratos'];
 
 function extractWorkspaceData() {
   var data = {};
@@ -1347,19 +1135,16 @@ function setSection(s) {
   if (typeof closeSidebar === 'function') closeSidebar();
   const titles = { 
     budget: "Presupuesto de Obra", 
-    ot: "Orden de Trabajo", 
     schedule: "Cronograma de Ejecución", 
     contractors: "Directorio de Contratistas", 
     prices: "Base de Datos de Precios", 
     dashboard: "Panel de Control", 
     themes: "Temas y Apariencia", 
     logs: "Libro de Obra / Bitácora",
-    materials: "Gestión de Materiales",
     finances: "Caja y Finanzas",
     performance: "Rendimiento y KPIs",
     documents: "Planos y Galería",
     suppliers: "Directorio de Proveedores",
-    jornaleros: "Jornaleros y Jornales",
     contratos: "Contratos Legales",
     resources: "Biblioteca y Recursos",
     projects: "Gestión de Proyectos",
@@ -1369,7 +1154,7 @@ function setSection(s) {
   const vtitle = document.getElementById("view-title");
   if (vtitle) vtitle.textContent = titles[s] || "Puntero";
 
-  ["global_dashboard", "budget", "ot", "schedule", "contractors", "jornaleros", "contratos", "prices", "dashboard", "themes", "logs", "materials", "finances", "performance", "documents", "suppliers", "resources", "projects", "aftercare", "computo", "folder", "cloud"].forEach(x => {
+  ["global_dashboard", "budget", "schedule", "contractors", "contratos", "prices", "dashboard", "themes", "logs", "finances", "performance", "documents", "suppliers", "resources", "projects", "folder", "cloud"].forEach(x => {
     const el = document.getElementById("section-" + x);
     if (el) el.style.display = s === x ? "" : "none";
     const b = document.getElementById("btn-" + x);
@@ -1378,18 +1163,13 @@ function setSection(s) {
   if (s === "global_dashboard") renderGlobalDashboard();
   if (s === "projects") renderProjects();
   if (s === "budget") renderBudget();
-  if (s === "ot") renderOT();
-  if (s === "computo") renderComputoSection();
-  if (s === "aftercare") renderAftercare();
   if (s === "prices") renderPrices();
   if (s === "themes") renderThemes();
   if (s === "dashboard") renderDashboard();
   if (s === "schedule") renderSchedule();
   if (s === "contractors") renderContractors();
-  if (s === "jornaleros") renderJornaleros();
   if (s === "contratos") renderContratos();
   if (s === "logs") renderLogs();
-  if (s === "materials") renderMaterials();
   if (s === "finances") renderFinances();
   if (s === "performance") renderPerformance();
   if (s === "documents") renderDocuments();
@@ -1404,7 +1184,7 @@ function renderDashboard() {
   if (!el) return;
   const p = getActiveProject();
   if (!p) { el.innerHTML = "<div class='empty'>Seleccioná un proyecto.</div>"; return; }
-  if (!p.execution) p.execution = { schedules: {}, dailyLogs: [], materialOrders: [], finances: { income: [], expenses: [] }, documents: [], aftercare: [] };
+  if (!p.execution) p.execution = { schedules: {}, dailyLogs: [], finances: { income: [], expenses: [] }, documents: [] };
   if (!p.execution.schedules) p.execution.schedules = {};
   if (!p.execution.finances) p.execution.finances = { income: [], expenses: [] };
   if (!p.execution.finances.income) p.execution.finances.income = [];
@@ -1421,16 +1201,17 @@ function renderDashboard() {
   const totalPaid = contractorPayments + generalExpenses;
   const financialProgress = total > 0 ? Math.round((totalPaid / total) * 100) : 0;
 
-  // Materiales
-  const orders = p.execution.materialOrders || [];
-  const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
-
   // Próximos hitos
   const adenda = getActiveAdenda();
   const nextMilestones = (adenda?.items || [])
     .filter(i => (p.execution.schedules[i.id]?.status || 'pending') !== 'done')
     .sort((a, b) => new Date(p.execution.schedules[a.id]?.start || '9999') - new Date(p.execution.schedules[b.id]?.start || '9999'))
     .slice(0, 3);
+
+  // Estado de tareas
+  const schedVals = Object.values(p.execution.schedules || {});
+  const tasksInProgress = schedVals.filter(s => s.status === 'progress').length;
+  const tasksDone = schedVals.filter(s => s.status === 'done').length;
 
   el.innerHTML = `<div class="prices-wrap">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
@@ -1461,9 +1242,9 @@ function renderDashboard() {
             <div style="font-size:0.8rem; color:var(--tx3); margin-top:5px">Ejecución: ${financialProgress}% del presupuesto</div>
         </div>
         <div class="dash-card">
-            <div class="dash-num">${deliveredOrders}/${orders.length}</div>
-            <div class="dash-lbl">Logística</div>
-            <div style="font-size:0.8rem; color:var(--tx3); margin-top:5px">${orders.length - deliveredOrders} pendientes</div>
+            <div class="dash-num">${tasksInProgress}</div>
+            <div class="dash-lbl">Tareas en Curso</div>
+            <div style="font-size:0.8rem; color:var(--tx3); margin-top:5px">${tasksDone} completadas</div>
         </div>
         <div class="dash-card">
             <div class="dash-num" style="color:${(incomeTotal - totalPaid) >= 0 ? 'var(--ok)' : 'var(--err)'}">${fmt(incomeTotal - totalPaid)}</div>
@@ -1503,12 +1284,8 @@ function renderDashboard() {
         </div>
 
         <div class="card">
-            <h3 class="sec-lbl">👷 Personal en Obra</h3>
+            <h3 class="sec-lbl">👷 Equipo en Campo</h3>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
-                <div style="background:var(--sur2); padding:10px; border-radius:var(--rad); text-align:center">
-                    <div style="font-size:1.3rem; font-weight:800; color:var(--acc)">${state.jornaleros ? state.jornaleros.filter(j => j.isActive !== false).length : 0}</div>
-                    <div style="font-size:0.7rem; color:var(--tx3)">Jornaleros Activos</div>
-                </div>
                 <div style="background:var(--sur2); padding:10px; border-radius:var(--rad); text-align:center">
                     <div style="font-size:1.3rem; font-weight:800; color:var(--acc)">${(state.contractors || []).length}</div>
                     <div style="font-size:0.7rem; color:var(--tx3)">Contratistas</div>
@@ -1518,8 +1295,12 @@ function renderDashboard() {
                     <div style="font-size:0.7rem; color:var(--tx3)">Partes Diarios</div>
                 </div>
                 <div style="background:var(--sur2); padding:10px; border-radius:var(--rad); text-align:center">
-                    <div style="font-size:1.3rem; font-weight:800; color:${(p.execution.aftercare || []).filter(a => a.status !== 'resolved').length > 0 ? 'var(--err)' : 'var(--ok)'}">${(p.execution.aftercare || []).filter(a => a.status !== 'resolved').length}</div>
-                    <div style="font-size:0.7rem; color:var(--tx3)">Garantías Pendientes</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:var(--acc)">${tasksInProgress}</div>
+                    <div style="font-size:0.7rem; color:var(--tx3)">Tareas en Curso</div>
+                </div>
+                <div style="background:var(--sur2); padding:10px; border-radius:var(--rad); text-align:center">
+                    <div style="font-size:1.3rem; font-weight:800; color:var(--ok)">${tasksDone}</div>
+                    <div style="font-size:0.7rem; color:var(--tx3)">Tareas Completadas</div>
                 </div>
             </div>
             <button class="btn sm full" style="margin-top:10px" onclick="setSection('contractors')">👷 Gestionar Personal</button>
@@ -2493,25 +2274,6 @@ function exportFinancesCSV() {
   toast("Finanzas exportadas ✓");
 }
 
-// ── EXPORT JORNALEROS CSV ────────────────────────────────────────────
-function exportJornalerosCSV() {
-  if (!state.jornaleros || state.jornaleros.length === 0) return toast("Sin jornaleros registrados", false);
-  const BOM = "\uFEFF", nl = "\r\n", q = v => `"${String(v).replace(/"/g, '""')}"`;
-  let csv = BOM;
-  csv += q("Nombre") + "," + q("Apellido") + "," + q("Cédula") + "," + q("Rol") + "," + q("Jornal Diario") + "," + q("Activo") + "," + q("IPS") + "," + q("Total Jornadas") + "," + q("Total Devengado") + nl;
-  state.jornaleros.forEach(j => {
-    const totalJornadas = (j.jornadas || []).length;
-    const totalDevengado = (j.jornadas || []).reduce((s, jd) => s + (jd.monto || 0), 0);
-    csv += q(j.name || "") + "," + q(j.surname || "") + "," + q(j.idNumber || "") + "," + q(j.role || "") + "," + q(j.dailyWage || "") + "," + q(j.isActive !== false ? "Si" : "No") + "," + q(j.hasIPS ? "Si" : "No") + "," + q(totalJornadas) + "," + q(totalDevengado) + nl;
-  });
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = `Jornaleros_${todayISO()}.csv`;
-  a.click(); URL.revokeObjectURL(url);
-  toast("Jornaleros exportados ✓");
-}
-
 // ── EXPORT GOOGLE SHEETS (.xlsx XML Spreadsheet) ─────────────────────
 function exportToGoogleSheets() {
   const p = getActiveProject();
@@ -2707,81 +2469,6 @@ ${m2Sheet}
 }
 
 // ── EXPORT MS PROJECT (XML) ─────────────────────────────────────────
-function exportScheduleMSProject() {
-  const p = getActiveProject();
-  const adenda = getActiveAdenda();
-  if (!p || !adenda) return toast("Sin proyecto activo", false);
-  if (!adenda.items.length) return toast("Agregá items al presupuesto primero", false);
-
-  const schedules = p.execution.schedules || {};
-  const projectStart = p.execution.projectStartDate || todayISO();
-  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const mspDate = d => { if (!d) return ''; return new Date(d).toISOString().replace(/\.\d{3}Z$/, ''); };
-  const calcDur = (s, e) => {
-    if (!s || !e) return 'PT8H0M0S';
-    let d = Math.max(1, Math.round((new Date(e) - new Date(s)) / 86400000) + 1);
-    d -= Math.floor(d / 7) * 2;
-    return `PT${Math.max(1, d) * 8}H0M0S`;
-  };
-
-  let tasks = '', uid = 1;
-  tasks += `<Task><UID>0</UID><ID>0</ID><Name>${esc(p.name)}</Name><Type>1</Type><OutlineLevel>0</OutlineLevel><Start>${mspDate(projectStart)}</Start><Summary>1</Summary></Task>`;
-
-  const cats = {};
-  adenda.items.forEach(it => { if (!cats[it.cat]) cats[it.cat] = []; cats[it.cat].push(it); });
-  const tMap = {};
-
-  for (const [cat, items] of Object.entries(cats)) {
-    tasks += `<Task><UID>${uid}</UID><ID>${uid}</ID><Name>${esc(cat)}</Name><OutlineLevel>1</OutlineLevel><Summary>1</Summary><Type>1</Type></Task>`;
-    uid++;
-    for (const item of items) {
-      const sch = schedules[item.id] || {};
-      const st = sch.start || projectStart, en = sch.end || st;
-      const pct = sch.status === 'done' ? 100 : sch.status === 'progress' ? 50 : 0;
-      tMap[item.id] = uid;
-      tasks += `<Task><UID>${uid}</UID><ID>${uid}</ID><Name>${esc(item.name)}</Name><OutlineLevel>2</OutlineLevel><Type>0</Type><Start>${mspDate(st)}</Start><Finish>${mspDate(en)}</Finish><Duration>${calcDur(st, en)}</Duration><PercentComplete>${pct}</PercentComplete><FixedCost>${Math.round(effPrice(item) * item.qty)}</FixedCost><Notes>${esc(item.qty + ' ' + item.unit)}</Notes><Summary>0</Summary></Task>`;
-      uid++;
-    }
-  }
-
-  let resources = '', rUid = 1, cMap = {};
-  (state.contractors || []).filter(c => !c.isBlacklisted).forEach(c => {
-    cMap[c.id] = rUid;
-    resources += `<Resource><UID>${rUid}</UID><ID>${rUid}</ID><Name>${esc(c.name)}</Name><Type>1</Type><Group>${esc(c.specialty || '')}</Group></Resource>`;
-    rUid++;
-  });
-
-  let assignments = '', aUid = 1;
-  adenda.items.forEach(it => {
-    const sch = schedules[it.id] || {};
-    if (sch.contractorId && cMap[sch.contractorId] && tMap[it.id])
-      assignments += `<Assignment><UID>${aUid++}</UID><TaskUID>${tMap[it.id]}</TaskUID><ResourceUID>${cMap[sch.contractorId]}</ResourceUID><Units>1</Units></Assignment>`;
-  });
-
-  const wd = n => `<WeekDay><DayType>${n}</DayType><DayWorking>1</DayWorking><WorkingTimes><WorkingTime><FromTime>07:00:00</FromTime><ToTime>12:00:00</ToTime></WorkingTime><WorkingTime><FromTime>13:00:00</FromTime><ToTime>16:00:00</ToTime></WorkingTime></WorkingTimes></WeekDay>`;
-
-  const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Project xmlns="http://schemas.microsoft.com/project">
-<Name>${esc(p.name)}</Name><Title>${esc(p.name)} - Cronograma</Title>
-<Company>${esc((state.profile && state.profile.company) || '')}</Company>
-<StartDate>${mspDate(projectStart)}</StartDate>
-<CurrencySymbol>Gs.</CurrencySymbol><CurrencyCode>PYG</CurrencyCode>
-<CalendarUID>1</CalendarUID><DefaultStartTime>07:00:00</DefaultStartTime><DefaultFinishTime>16:00:00</DefaultFinishTime>
-<MinutesPerDay>480</MinutesPerDay><MinutesPerWeek>2400</MinutesPerWeek><DaysPerMonth>22</DaysPerMonth>
-<Calendars><Calendar><UID>1</UID><Name>Paraguay</Name><IsBaseCalendar>1</IsBaseCalendar>
-<WeekDays><WeekDay><DayType>1</DayType><DayWorking>0</DayWorking></WeekDay>${wd(2)}${wd(3)}${wd(4)}${wd(5)}${wd(6)}<WeekDay><DayType>7</DayType><DayWorking>0</DayWorking></WeekDay></WeekDays>
-</Calendar></Calendars>
-<Tasks>${tasks}</Tasks><Resources>${resources}</Resources><Assignments>${assignments}</Assignments>
-</Project>`;
-
-  const blob = new Blob([xml], { type: 'application/xml' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `Cronograma_${(p.name || 'proyecto').replace(/\s+/g, '_')}.xml`;
-  a.click(); URL.revokeObjectURL(url);
-  toast("Cronograma MS Project (.xml) exportado ✓");
-}
-
 // ── PDF ────────────────────────────────────────────────────────────────
 function pdfTxt(s) {
   return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -3101,10 +2788,8 @@ function createProject() {
         execution: {
             schedules: {},
             dailyLogs: [],
-            materialOrders: [],
             finances: { income: [], expenses: [] },
             documents: [],
-            aftercare: [],
             projectStartDate: "",
             projectEndDate: "",
             folderHandle: _pendingFolderHandle || null,
@@ -3625,10 +3310,8 @@ function importProject() {
             execution: {
               schedules: data.schedules || {},
               dailyLogs: [],
-              materialOrders: [],
               finances: { income: [], expenses: [] },
               documents: [],
-              aftercare: [],
               projectStartDate: "",
               projectEndDate: ""
             }
@@ -3842,10 +3525,8 @@ function loadDemoProject() {
         "102": { status: "progress", start: "2026-04-12", end: "2026-04-30", contractorId: "con_demo_1" }
       },
       dailyLogs: [],
-      materialOrders: [],
       finances: { income: [], expenses: [] },
       documents: [],
-      aftercare: [],
       projectStartDate: "2026-04-01",
       projectEndDate: ""
     }
@@ -3858,7 +3539,7 @@ function loadDemoProject() {
 
   state.contractors = [
     { id: "con_demo_1", name: "Maestro Pintos", phone: "0981 000 111", specialty: "Albañilería y Estructura", email: "pintos_obras@gmail.com", notes: "Excelente para cimientos y mampostería. Muy puntual.", payments: [{amount: 2000000, date: "2026-04-20", note: "Anticipo inicio obra"}], staff: [] },
-    { id: "con_demo_2", name: "Juan 'Chapuza' González", phone: "0971 222 333", specialty: "Instalaciones", isBlacklisted: true, notes: "No contratar. Malas terminaciones y deja la obra a medias.", payments: [], staff: [] }
+    { id: "con_demo_2", name: "Juan 'Chapuza' González", phone: "0971 222 333", specialty: "Instalaciones", notes: "Malas terminaciones y deja la obra a medias.", payments: [], staff: [] }
   ];
 }
 
@@ -4027,7 +3708,7 @@ function renderCloudSettings() {
       '</div>'
     ) : (
       '<div style="background:var(--sur2);padding:14px;border-radius:var(--rad);margin-bottom:12px">' +
-      '<p style="font-size:0.85rem;color:var(--tx3);margin-bottom:10px">Trabajá en tiempo real con otro usuario. Los proyectos, contratistas, proveedores, jornaleros y contratos se comparten al instante.</p>' +
+      '<p style="font-size:0.85rem;color:var(--tx3);margin-bottom:10px">Trabajá en tiempo real con otro usuario. Los proyectos, contratistas, proveedores y contratos se comparten al instante.</p>' +
       '<div style="display:flex;flex-direction:column;gap:8px">' +
       '<button class="btn primary full" onclick="createWorkspace()">➕ Crear Workspace</button>' +
       '<div style="display:flex;gap:8px">' +
@@ -4125,45 +3806,14 @@ function fetchExchangeRate() {
   }).catch(function () {});
 }
 
-// ── BASE64 TO STORAGE MIGRATION ────────────────────────────────────────────
-function migrateBase64ToStorage() {
-  if (!window._STORAGE || !window._currentUser) return;
-  if (state._base64Migrated) return;
-  var found = 0;
-  // Scan materialOrders for base64 delivery photos
-  (state.projects || []).forEach(function (p) {
-    (p.execution?.materialOrders || []).forEach(function (o) {
-      if (o.deliveryPhoto && o.deliveryPhoto.startsWith("data:")) {
-        found++;
-        var byteString = atob(o.deliveryPhoto.split(",")[1]);
-        var mime = o.deliveryPhoto.split(",")[0].match(/:(.*?);/)[1];
-        var ab = new ArrayBuffer(byteString.length);
-        var ia = new Uint8Array(ab);
-        for (var i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
-        var blob = new Blob([ab], { type: mime });
-        var ref = window._STORAGE.ref("users/" + window._currentUser.uid + "/migrated/" + o.id + ".jpg");
-        ref.put(blob).then(function (snap) { return snap.ref.getDownloadURL(); }).then(function (url) {
-          o.deliveryPhoto = url;
-          save();
-        }).catch(function () {});
-      }
-    });
-  });
-  if (found > 0) toast("Migrando " + found + " fotos a la nube...");
-  state._base64Migrated = true;
-  save();
-}
-
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.onload = () => {
   if (!state.finances) state.finances = { income: [], expenses: [] };
-  if (!state.materialOrders) state.materialOrders = [];
   if (!state.contractors) state.contractors = [];
-  if (!state.jornaleros) state.jornaleros = [];
-  if (!state.jornalConfig) state.jornalConfig = { ayudante: 80000, oficial: 110000, puntero: 140000 };
   
   migrateToV7();
   migrateToV9();
+  migrateToV10();
   renderCurrencyArea();
   initFirebaseAuth();
   fetchExchangeRate();
@@ -4175,9 +3825,6 @@ window.onload = () => {
 
   updateBadge();
   checkBackupReminder();
-  
-  // Migrar fotos base64 antiguas a Storage (si hay sesión)
-  setTimeout(migrateBase64ToStorage, 3000);
 };
 
 /**

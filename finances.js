@@ -1,5 +1,5 @@
 /**
- * finances.js — Gestión financiera integral (Ingresos, Egresos y jornales)
+ * finances.js — Gestión financiera integral (Ingresos y Egresos)
  */
 
 var EXPENSE_CATEGORIES = [
@@ -46,20 +46,13 @@ function renderFinances() {
     var assignedConIds = new Set(Object.values(p.execution.schedules || {}).map(function(s) { return s.contractorId; }).filter(Boolean));
     var contractorPayments = (state.contractors || []).filter(function(c) { return assignedConIds.has(c.id); }).reduce(function(s, c) { return s + (c.payments || []).reduce(function(sp, py) { return sp + (py.amount || 0); }, 0); }, 0);
 
-    // 2. Costo de Jornales (Basado en Asistencia en Bitácora)
+    // 2. Costo de Mano de Obra Propia (Basado en Asistencia en Bitácora)
     var laborCostTotal = 0;
     (p.execution.dailyLogs || []).forEach(function(log) {
         (log.attendance || []).forEach(function(att) {
-            if (att.present) {
-                var rate = 0;
-                if (att.origin === 'Equipo Propio') {
-                    var m = (state.ownTeam || []).find(function(o) { return o.name + " " + o.surname === att.name; });
-                    if (m) rate = m.dailyRate;
-                } else if (att.origin === 'Jornalero') {
-                    var m = (p.execution.dayWorkers || []).find(function(d) { return d.name + " " + d.surname === att.name; });
-                    if (m) rate = m.dailyRate;
-                }
-                laborCostTotal += rate;
+            if (att.present && att.origin === 'Equipo Propio') {
+                var m = (state.ownTeam || []).find(function(o) { return o.name + " " + o.surname === att.name; });
+                if (m) laborCostTotal += m.dailyRate;
             }
         });
     });
@@ -92,7 +85,7 @@ function renderFinances() {
             <div class="dash-card"><div class="dash-num" style="color:var(--ok)">${fmt(incomeTotal)}</div><div class="dash-lbl">Ingresos</div></div>
             <div class="dash-card"><div class="dash-num" style="color:var(--err)">${fmt(totalSpent)}</div><div class="dash-lbl">Egresos Reales</div></div>
             <div class="dash-card"><div class="dash-num" style="color:${balance >= 0 ? 'var(--ok)' : 'var(--err)'}">${fmt(balance)}</div><div class="dash-lbl">Saldo en Caja</div></div>
-            <div class="dash-card"><div class="dash-num">${fmt(contractorPayments+laborCostTotal)}</div><div class="dash-lbl">MO Ext+Jornales</div></div>
+            <div class="dash-card"><div class="dash-num">${fmt(contractorPayments+laborCostTotal)}</div><div class="dash-lbl">MO Contratista+Propia</div></div>
         </div>
 
         <div class="card" style="margin-top:20px">

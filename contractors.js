@@ -9,31 +9,28 @@ function renderContractors() {
     const adenda = getActiveAdenda();
 
     let h = `<div class="prices-wrap">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px">
             <div>
                 <h2 style="font-family:var(--font-display); font-weight:800; margin-bottom:4px">GESTIÓN DE CONTRATISTAS</h2>
                 <p style="color:var(--tx3); font-size:0.9rem">Directorio y Control de Pagos</p>
             </div>
-            <button class="btn primary" onclick="showAddContractorModal()">+ Nuevo Contratista</button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button class="btn primary" onclick="showAddContractorModal()">+ Nuevo Contratista</button>
+            </div>
         </div>
 
         <div class="card" style="margin-bottom:18px; padding:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
             <span style="font-size:0.85rem; font-weight:700; color:var(--tx3)">Filtros:</span>
-            <input id="con-filter-text" placeholder="Buscar por nombre o especialidad..." style="width:250px; font-size:0.85rem" oninput="renderContractors()">
-            <select id="con-filter-ips" style="width:140px; font-size:0.85rem" onchange="renderContractors()">
+            <input id="con-filter-text" placeholder="Buscar por nombre o especialidad..." style="width:220px; font-size:0.85rem" oninput="renderContractors()">
+            <select id="con-filter-ips" style="width:130px; font-size:0.85rem" onchange="renderContractors()">
                 <option value="all">IPS: Todos</option>
                 <option value="yes">Con IPS</option>
                 <option value="no">Sin IPS</option>
             </select>
-            <select id="con-filter-records" style="width:160px; font-size:0.85rem" onchange="renderContractors()">
+            <select id="con-filter-records" style="width:150px; font-size:0.85rem" onchange="renderContractors()">
                 <option value="all">Antecedentes: Todos</option>
                 <option value="clean">Sin Antecedentes</option>
                 <option value="flagged">Con Antecedentes</option>
-            </select>
-            <select id="con-filter-blacklist" style="width:160px; font-size:0.85rem" onchange="renderContractors()">
-                <option value="all">Lista Negra: Todos</option>
-                <option value="hide">Ocultar Lista Negra</option>
-                <option value="only">Solo Lista Negra</option>
             </select>
         </div>
 
@@ -42,7 +39,6 @@ function renderContractors() {
     const filterText = document.getElementById("con-filter-text")?.value.toLowerCase() || "";
     const filterIPS = document.getElementById("con-filter-ips")?.value || "all";
     const filterRecords = document.getElementById("con-filter-records")?.value || "all";
-    const filterBlacklist = document.getElementById("con-filter-blacklist")?.value || "all";
 
     const filteredContractors = (state.contractors || []).filter(con => {
         const matchesText = con.name.toLowerCase().includes(filterText) || (con.specialty || "").toLowerCase().includes(filterText);
@@ -52,11 +48,8 @@ function renderContractors() {
 
         const matchesIPS = filterIPS === "all" || (filterIPS === "yes" && hasStaffWithIPS) || (filterIPS === "no" && !hasStaffWithIPS);
         const matchesRecords = filterRecords === "all" || (filterRecords === "clean" && !hasStaffWithRecords) || (filterRecords === "flagged" && hasStaffWithRecords);
-        const matchesBlacklist = filterBlacklist === "all"
-            || (filterBlacklist === "hide" && !con.isBlacklisted)
-            || (filterBlacklist === "only" && con.isBlacklisted);
 
-        return matchesText && matchesIPS && matchesRecords && matchesBlacklist;
+        return matchesText && matchesIPS && matchesRecords;
     });
 
     if (filteredContractors.length === 0) {
@@ -74,11 +67,12 @@ function renderContractors() {
         
         const totalPaid = (con.payments || []).reduce((s, pay) => s + pay.amount, 0);
         const balance = totalMO - totalPaid;
-
         const phoneClean = (con.phone || '').replace(/[^\d+]/g, '');
-        h += `<div class="con-card ${con.isBlacklisted ? 'blacklist' : ''}" ${con.isBlacklisted ? 'style="border-left:4px solid var(--err); background:rgba(248,113,113,0.05)"' : ''}>
-            ${con.isBlacklisted ? '<div style="font-size:0.7rem; font-weight:800; color:var(--err); text-transform:uppercase; margin-bottom:4px">🚨 Lista Negra</div>' : ''}
-            <div class="con-name">${con.name}</div>
+
+        h += `<div class="con-card">
+            <div class="con-header">
+                <div class="con-name">${con.name}</div>
+            </div>
             <div class="con-meta">
                 <span>📱 ${con.phone || 'S/T'}</span>
                 <span>🔨 ${con.specialty || 'Gral'}</span>
@@ -119,7 +113,6 @@ function showAddContractorModal() {
             <input id="cn-phone" placeholder="Teléfono">
             <input id="cn-spec" placeholder="Especialidad">
             <textarea id="cn-notes" placeholder="Notas..."></textarea>
-            <label><input type="checkbox" id="cn-black"> 🚨 Lista Negra</label>
         </div>
         <div class="modal-acts">
             <button class="btn" onclick="closeModal()">Cancelar</button>
@@ -137,7 +130,6 @@ function addContractor() {
         phone: document.getElementById("cn-phone").value,
         specialty: document.getElementById("cn-spec").value,
         notes: document.getElementById("cn-notes").value,
-        isBlacklisted: document.getElementById("cn-black").checked,
         payments: [], staff: []
     };
     if (!state.contractors) state.contractors = [];
@@ -194,7 +186,6 @@ function addPayment(conId) {
     if (con) {
         if (!con.payments) con.payments = [];
         con.payments.push({ amount: amt, date, note, id: Date.now() });
-        // Integración Contratistas → Finanzas: registrar como egreso automático
         const proj = getActiveProject();
         if (proj && proj.execution) {
             if (!proj.execution.finances) proj.execution.finances = { income: [], expenses: [] };

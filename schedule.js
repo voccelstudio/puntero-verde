@@ -159,14 +159,13 @@ function renderSchedule() {
 
 function renderExecutionCell(itemId, sch) {
     var mode = sch.executionMode || "contractor";
-    var modeIcons = { contractor: "👷", own_team: "🏗️", day_workers: "👤" };
-    var modeLabels = { contractor: "Contratista", own_team: "Equipo Propio", day_workers: "Jornaleros" };
+    var modeIcons = { contractor: "👷", own_team: "🏗️" };
+    var modeLabels = { contractor: "Contratista", own_team: "Equipo Propio" };
 
     var h = '<select style="width:100%;padding:4px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);color:var(--tx);font-size:0.78rem" ' +
         'onchange="updateSchedule(\'' + itemId + "', 'executionMode', this.value);renderSchedule()\">" +
         '<option value="contractor"' + (mode === "contractor" ? " selected" : "") + '>👷 Contratista</option>' +
-        '<option value="own_team"' + (mode === "own_team" ? " selected" : "") + '>🏗️ Equipo Propio</option>' +
-        '<option value="day_workers"' + (mode === "day_workers" ? " selected" : "") + '>👤 Jornaleros</option></select>';
+        '<option value="own_team"' + (mode === "own_team" ? " selected" : "") + '>🏗️ Equipo Propio</option></select>';
 
     if (mode === "contractor") {
         h += '<select style="width:100%;padding:3px 4px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);color:var(--tx);font-size:0.75rem;margin-top:4px" ' +
@@ -177,7 +176,7 @@ function renderExecutionCell(itemId, sch) {
             }).join("") + '</select>';
     } else {
         var assigned = sch.assignedStaff || [];
-        var listName = mode === "own_team" ? "Equipo Propio" : "Jornaleros";
+        var listName = "Equipo Propio";
         var count = assigned.length;
         h += '<div style="margin-top:4px;display:flex;gap:4px">' +
             '<span style="font-size:0.7rem;color:var(--tx3);flex:1;line-height:1.6">' + count + ' personas asignadas</span>' +
@@ -216,12 +215,12 @@ function showAssignPersonnelModal(itemId) {
     if (!p || !p.execution.schedules) { toast("Cronograma no disponible", false); return; }
     var sch = p.execution.schedules[itemId] || { executionMode: "contractor", assignedStaff: [] };
     var isOwn = sch.executionMode === "own_team";
-    var list = isOwn ? state.ownTeam : (p.execution.dayWorkers || []);
+    var list = state.ownTeam || [];
     if (!sch.assignedStaff) sch.assignedStaff = [];
 
     var el = document.getElementById("modal-area");
     el.innerHTML = '<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:400px">' +
-        '<div class="modal-title">Asignar ' + (isOwn ? "Equipo Propio" : "Jornaleros") + '<button class="delbtn" onclick="closeModal()">✕</button></div>' +
+        '<div class="modal-title">Asignar Equipo Propio<button class="delbtn" onclick="closeModal()">✕</button></div>' +
         '<div style="max-height:300px;overflow-y:auto;margin-bottom:15px">' +
         (list.map(function (m) {
             return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bor)">' +

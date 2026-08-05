@@ -4,7 +4,7 @@
  * Permite uso offline en obra cuando no hay señal.
  */
 
-const CACHE_NAME = 'puntero-v2-rebrand';
+const CACHE_NAME = 'puntero-v3-ambiental';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -19,7 +19,6 @@ const ASSETS_TO_CACHE = [
   './schedule.js',
   './logs.js',
   './contractors.js',
-  './materials.js',
   './finances.js',
   './performance.js',
   './documents.js',

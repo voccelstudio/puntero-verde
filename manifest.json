@@ -39,12 +39,6 @@
       "url": "./?section=logs"
     },
     {
-      "name": "Materiales",
-      "short_name": "Materiales",
-      "description": "Gestión de pedidos",
-      "url": "./?section=materials"
-    },
-    {
       "name": "Contratistas",
       "short_name": "Contratistas",
       "description": "Directorio y pagos",
