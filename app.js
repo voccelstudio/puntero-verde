@@ -2117,6 +2117,7 @@ function applyGlobalAdjust() {
 // ── THEMES SECTION ────────────────────────────────────────────────────
 const THEMES = [
   { id: "xp", name: "Puntero Verde XP", desc: "Windows XP, verde esmeralda", prev: { bg: "#cfeccf", sur: "#f2f8f0", acc: "#1d7a37", row: "#e4f1e2" } },
+  { id: "aero", name: "Aero-Eco", desc: "Frutiger Aero: vidrio, brillos y agua", prev: { bg: "#dceefc", sur: "#ffffff", acc: "#005fac", row: "#e9f4fd" } },
   { id: "dark", name: "Constructor Dark", desc: "Oscuro ámbar", prev: { bg: "#0f1117", sur: "#181c26", acc: "#f59e0b", row: "#1e2330" } },
   { id: "light", name: "Proyecto de Día", desc: "Claro terracota", prev: { bg: "#f4f1eb", sur: "#ffffff", acc: "#c2410c", row: "#f9f7f3" } },
   { id: "blueprint", name: "Plano Técnico", desc: "Azul blueprint", prev: { bg: "#071525", sur: "#0c1f35", acc: "#38bdf8", row: "#102846" } },
