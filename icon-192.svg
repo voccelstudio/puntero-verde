@@ -1,18 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="36" fill="#0f172a"/>
-  <circle cx="96" cy="96" r="76" fill="#0f172a"/>
-  <circle cx="96" cy="96" r="70" fill="none" stroke="#f59e0b" stroke-width="3"/>
-
-  <g transform="translate(96 96) rotate(-30)">
-    <path d="M -45 -3 L 45 -3 L 36 26 L -36 26 Z" fill="#f59e0b" stroke="#c2410c" stroke-width="1.5"/>
-    <rect x="-5" y="-24" width="10" height="22" rx="2" fill="#78350f"/>
-  </g>
-
-  <g transform="translate(96 96)">
-    <ellipse cx="0" cy="13" rx="32" ry="5" fill="#e2e8f0"/>
-    <path d="M -29 13 Q -29 -19 0 -19 Q 29 -19 29 13 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-    <path d="M -13 -11 Q 0 -16 13 -11" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
-    <circle cx="-21" cy="5" r="2.2" fill="#94a3b8"/>
-    <circle cx="21" cy="5" r="2.2" fill="#94a3b8"/>
-  </g>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#3f9e4e"/>
+      <stop offset="100%" stop-color="#14572a"/>
+    </radialGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d6f5c8"/>
+      <stop offset="100%" stop-color="#7bd37e"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="36" fill="url(#bg)"/>
+  <circle cx="96" cy="96" r="76" fill="url(#bg)"/>
+  <circle cx="96" cy="96" r="70" fill="none" stroke="#eaffea" stroke-width="3" opacity=".6"/>
+  <path d="M 96 34 C 153 46 165 100 146 130 C 127 160 73 160 46 142 C 84 134 100 108 96 84 C 92 108 80 118 57 126 C 34 104 40 54 96 34 Z" fill="url(#leaf)"/>
+  <path d="M 96 54 C 127 61 136 92 125 117 C 113 142 77 142 60 128 C 84 124 96 104 96 88 C 96 104 88 112 72 115 C 60 102 66 62 96 54 Z" fill="#eaffea" opacity=".85"/>
+  <path d="M 96 57 L 96 138" stroke="#1d7a37" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 96 80 Q 121 73 138 57" fill="none" stroke="#1d7a37" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 96 100 Q 73 96 61 80" fill="none" stroke="#1d7a37" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 96 120 Q 117 115 130 100" fill="none" stroke="#1d7a37" stroke-width="6" stroke-linecap="round"/>
 </svg>

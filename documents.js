@@ -465,7 +465,7 @@ function renderDocuments() {
 
     el.innerHTML = '<div class="prices-wrap">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px">' +
-        '<h2 class="sec-lbl" style="margin:0">Planos y Galería de Obra</h2>' +
+        '<h2 class="sec-lbl" style="margin:0">Documentos y Evidencias</h2>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
         '<button class="btn primary" onclick="document.getElementById(\'doc-upload-cam\').click()">📸 Tomar foto</button>' +
         '<button class="btn" onclick="document.getElementById(\'doc-upload\').click()">📁 Subir archivo</button>' +

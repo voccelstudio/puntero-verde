@@ -33,7 +33,7 @@ function renderLogs() {
     if (isMobile) {
         h += '<div style="background:var(--acc);border-radius:var(--rad);padding:15px;margin-bottom:18px;text-align:center;cursor:pointer" onclick="showWalkthroughModal()">' +
             '<div style="font-size:1.5rem">📸</div>' +
-            '<div style="font-weight:700;color:white;margin-top:6px">Iniciar Recorrido de Obra</div>' +
+            '<div style="font-weight:700;color:white;margin-top:6px">Iniciar Inspección Ambiental</div>' +
             '<div style="font-size:0.8rem;color:rgba(255,255,255,0.7)">Fotos + checklist + ubicación</div>' +
             '</div>';
     }
@@ -141,7 +141,7 @@ function showDailyLogModal() {
     }).join("");
 
     el.innerHTML = '<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:600px">' +
-        '<div class="modal-title">📔 Bitácora de Obra<button class="delbtn" onclick="closeModal()">✕</button></div>' +
+        '<div class="modal-title">📔 Bitácora Ambiental<button class="delbtn" onclick="closeModal()">✕</button></div>' +
         '<div class="grid2">' +
         '<div><label class="stat-lbl">Fecha y Clima</label><div style="display:flex;gap:5px">' +
         dateInputPY("log-date", today, "autoFetchWeather(this.value)", "flex:1") +
@@ -165,8 +165,8 @@ function showWalkthroughModal() {
     }).join("");
 
     el.innerHTML = '<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:500px">' +
-        '<div class="modal-title">📸 Recorrido de Obra<button class="delbtn" onclick="closeModal()">✕</button></div>' +
-        '<p style="font-size:0.85rem;color:var(--tx3);margin-bottom:12px">Registrá el estado de la obra con fotos y checklist.</p>' +
+        '<div class="modal-title">📸 Inspección Ambiental<button class="delbtn" onclick="closeModal()">✕</button></div>' +
+        '<p style="font-size:0.85rem;color:var(--tx3);margin-bottom:12px">Registrá el estado del proyecto con fotos y checklist.</p>' +
         '<div class="grid2">' +
         '<div><label class="stat-lbl">Fecha</label>' + dateInputPY("walk-date", today, "", "width:100%") + "</div>" +
         '<div><label class="stat-lbl">Clima</label><select id="walk-weather" style="width:100%"><option value="sunny">☀️ Sol</option><option value="cloudy">☁️ Nublado</option><option value="rainy">🌧️ Lluvia</option></select></div></div>' +
@@ -312,7 +312,7 @@ function saveWalkthrough() {
         id: "log_" + Date.now(),
         date: document.getElementById("walk-date")?.value || todayISO(),
         weather: document.getElementById("walk-weather")?.value || "sunny",
-        workDone: document.getElementById("walk-notes")?.value || "Recorrido de obra - inspección visual",
+        workDone: document.getElementById("walk-notes")?.value || "Inspección ambiental - verificación visual",
         attendance: [], photos: _walkPhotos.slice(), location: location,
         inspection: inspection, isWalkthrough: true
     };

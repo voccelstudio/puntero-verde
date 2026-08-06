@@ -205,7 +205,7 @@ let state = {
   projectName: "Nuevo Proyecto", clientName: "", clientPhone: "", clientAddress: "",
   profitPct: 0, validDays: 30, budgetNum: 1, notes: "", pdfShowBreakdown: false,
   priceEditMode: "total", editPriceKey: null, editField: "total", activeBudgetId: null,
-  theme: "slate",
+  theme: "xp",
   ivaEnabled: false, ivaEnPDF: false,
   adjustPct: 0,
   profile: { company: "", professional: "", matricula: "", ruc: "", phone: "", email: "", address: "", instagram: "", whatsapp: "", website: "" },
@@ -788,7 +788,7 @@ function renderProjects() {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px">
             <div>
                 <h2 class="sec-lbl" style="margin:0">Catálogo de Proyectos</h2>
-                <p style="color:var(--tx3); font-size:0.9rem">Gestión y clasificación de obras</p>
+                <p style="color:var(--tx3); font-size:0.9rem">Gestión y clasificación de proyectos ambientales</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap">
                 <div class="srch" style="margin:0; min-width:200px">
@@ -1114,7 +1114,7 @@ function stopWorkspaceListener() {
 }
 
 function applyTheme(t) {
-  document.documentElement.setAttribute("data-theme", t || "slate");
+  document.documentElement.setAttribute("data-theme", t || "xp");
 }
 
 let _tt = null;
@@ -1134,16 +1134,16 @@ function setSection(s) {
   // Cerrar drawer automáticamente al navegar (UX mobile)
   if (typeof closeSidebar === 'function') closeSidebar();
   const titles = { 
-    budget: "Presupuesto de Obra", 
-    schedule: "Cronograma de Ejecución", 
+    budget: "Presupuesto del Proyecto", 
+    schedule: "Cronograma del Proyecto", 
     contractors: "Directorio de Contratistas", 
     prices: "Base de Datos de Precios", 
-    dashboard: "Panel de Control", 
+    dashboard: "Resumen del Proyecto", 
     themes: "Temas y Apariencia", 
-    logs: "Libro de Obra / Bitácora",
+    logs: "Bitácora Ambiental",
     finances: "Caja y Finanzas",
-    performance: "Rendimiento y KPIs",
-    documents: "Planos y Galería",
+    performance: "Desempeño Ambiental",
+    documents: "Documentos y Evidencias",
     suppliers: "Directorio de Proveedores",
     contratos: "Contratos Legales",
     resources: "Biblioteca y Recursos",
@@ -1222,7 +1222,7 @@ function renderDashboard() {
                 ${dateInputPY('proj-overview-start', p.execution.projectStartDate || '', "updateProjectDate('start', this.value)")}
                 <span>Fin Est.:</span>
                 ${dateInputPY('proj-overview-end', p.execution.projectEndDate || '', "updateProjectDate('end', this.value)")}
-                <button class="btn sm" onclick="showProjectLocationModal()" style="margin-left:5px">📍 Ubicación de Obra</button>
+                <button class="btn sm" onclick="showProjectLocationModal()" style="margin-left:5px">📍 Ubicación del Proyecto</button>
             </div>
         </div>
         <div class="db-badge">${escapeHtml(p.name)}</div>
@@ -1339,12 +1339,12 @@ function renderDashboard() {
                     </div>
                 `).join("") || '<p style="color:var(--tx3); font-size:0.85rem">Sin partes registrados.</p>'}
             </div>
-            <button class="btn sm full" style="margin-top:10px" onclick="setSection('logs')">📔 Ir al Libro de Obra</button>
+            <button class="btn sm full" style="margin-top:10px" onclick="setSection('logs')">📔 Ir a la Bitácora</button>
         </div>
     </div>
 
     <div class="card" style="margin-top:16px">
-        <h3 class="sec-lbl">🖼️ Últimas Fotos de Obra</h3>
+        <h3 class="sec-lbl">🖼️ Últimas Evidencias</h3>
         <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap:8px; margin-top:10px">
             ${(p.execution.dailyLogs || []).flatMap(l => l.photos || []).slice(-6).map(ph => {
                 const photoUrl = typeof ph === 'string' ? ph : (ph.url || '');
@@ -1944,7 +1944,6 @@ function renderTable() {
   let h = m2html + `<div class="bud-hdr">
     <span style="font-size:.95rem;color:var(--tx3)">${adenda.items.length} ítem${adenda.items.length !== 1 ? "s" : ""}</span>
     <div style="flex:1"></div>
-    <button class="btn sm" onclick="setSection('computo')">🧱 Ver Cómputo</button>
     <button class="btn sm" onclick="showModal('breakdown')">📊 Desglose</button>
   </div>
   <table class="tbl budget-tbl"><thead><tr><th>Descripción</th><th>U.</th><th>Cant.</th><th>Desc.%</th><th>P. Unit.</th>${adenda.ivaEnabled ? "<th style='color:var(--iva)'>IVA</th>" : ""}<th>Total</th><th></th></tr></thead><tbody>`;
@@ -2117,8 +2116,9 @@ function applyGlobalAdjust() {
 
 // ── THEMES SECTION ────────────────────────────────────────────────────
 const THEMES = [
+  { id: "xp", name: "Puntero Verde XP", desc: "Windows XP, verde esmeralda", prev: { bg: "#cfeccf", sur: "#f2f8f0", acc: "#1d7a37", row: "#e4f1e2" } },
   { id: "dark", name: "Constructor Dark", desc: "Oscuro ámbar", prev: { bg: "#0f1117", sur: "#181c26", acc: "#f59e0b", row: "#1e2330" } },
-  { id: "light", name: "Obra de Día", desc: "Claro terracota", prev: { bg: "#f4f1eb", sur: "#ffffff", acc: "#c2410c", row: "#f9f7f3" } },
+  { id: "light", name: "Proyecto de Día", desc: "Claro terracota", prev: { bg: "#f4f1eb", sur: "#ffffff", acc: "#c2410c", row: "#f9f7f3" } },
   { id: "blueprint", name: "Plano Técnico", desc: "Azul blueprint", prev: { bg: "#071525", sur: "#0c1f35", acc: "#38bdf8", row: "#102846" } },
   { id: "elegant", name: "Estudio Elegante", desc: "Beige y dorado", prev: { bg: "#faf8f5", sur: "#ffffff", acc: "#8b6914", row: "#f5f2ed" } },
   { id: "neon", name: "Noche Neón", desc: "Dark ultravioleta", prev: { bg: "#050508", sur: "#0d0d14", acc: "#a855f7", row: "#12121c" } },
@@ -2928,7 +2928,7 @@ function showModal(type, arg) {
       el.innerHTML = `<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:550px">
       <div class="modal-title">Crear Nuevo Proyecto<button class="delbtn" onclick="closeModal()">✕</button></div>
       <div class="grid2">
-        <div class="fullcol"><label class="stat-lbl">Nombre de la Obra</label><input id="np-name" placeholder="Ej: Residencia Martinez"></div>
+        <div class="fullcol"><label class="stat-lbl">Nombre del Proyecto</label><input id="np-name" placeholder="Ej: Restauración Río Ytororó"></div>
         <div><label class="stat-lbl">Cliente</label><input id="np-client" placeholder="Nombre completo"></div>
         <div><label class="stat-lbl">Teléfono</label><input id="np-phone" placeholder="WhatsApp"></div>
         <div class="fullcol"><label class="stat-lbl">Ubicación / Dirección</label><input id="np-addr" placeholder="Ciudad, Barrio..."></div>
@@ -2937,7 +2937,7 @@ function showModal(type, arg) {
       ${supportsFileSystemAccess() ? `
       <div style="margin-top:16px;padding:14px;background:var(--sur2);border-radius:var(--rad);border:1px solid var(--bor)">
         <label class="stat-lbl" style="margin-bottom:8px">📁 Carpeta del Proyecto</label>
-        <p style="font-size:0.8rem;color:var(--tx3);margin-bottom:10px">Elegí una carpeta en tu PC donde se guardarán fotos, planos, PDFs y archivos de esta obra. Se crearán subcarpetas automáticamente.</p>
+        <p style="font-size:0.8rem;color:var(--tx3);margin-bottom:10px">Elegí una carpeta en tu PC donde se guardarán fotos, planos, PDFs y archivos de este proyecto. Se crearán subcarpetas automáticamente.</p>
         <div id="np-folder-status" style="display:flex;align-items:center;gap:8px">
           <button class="btn" onclick="selectNewProjectFolder()" id="np-folder-btn">📂 Elegir carpeta en mi PC</button>
           <span id="np-folder-name" style="font-size:0.85rem;color:var(--tx3)"></span>
@@ -2959,7 +2959,7 @@ function showModal(type, arg) {
       el.innerHTML = `<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:550px">
       <div class="modal-title">Modificar Proyecto<button class="delbtn" onclick="closeModal()">✕</button></div>
       <div class="grid2">
-        <div class="fullcol"><label class="stat-lbl">Nombre de la Obra</label><input id="ep-name" value="${p.name.replace(/"/g, '&quot;')}"></div>
+        <div class="fullcol"><label class="stat-lbl">Nombre del Proyecto</label><input id="ep-name" value="${p.name.replace(/"/g, '&quot;')}"></div>
         <div><label class="stat-lbl">Cliente</label><input id="ep-client" value="${(p.client || '').replace(/"/g, '&quot;')}"></div>
         <div><label class="stat-lbl">Teléfono</label><input id="ep-phone" value="${(p.phone || '').replace(/"/g, '&quot;')}"></div>
         <div class="fullcol"><label class="stat-lbl">Ubicación / Dirección</label><input id="ep-addr" value="${(p.address || '').replace(/"/g, '&quot;')}"></div>
@@ -3018,8 +3018,8 @@ function showModal(type, arg) {
         <div style="background:rgba(var(--acc-rgb), 0.05); padding:12px; border-radius:var(--rad); text-align:left; font-size:0.875rem; color:var(--tx2); margin-bottom:16px">
           <strong>¿Qué incluye este archivo?</strong><br>
           ✅ Presupuesto completo y todas las adendas<br>
-          ✅ Cronograma y estados de obra<br>
-          ✅ Bitácora, finanzas y materiales<br>
+          ✅ Cronograma y estados del proyecto<br>
+          ✅ Bitácora, finanzas y proveedores<br>
           ✅ Contratistas asignados a este proyecto<br>
           ✅ Notas, honorarios e IVA
         </div>
@@ -3837,8 +3837,8 @@ function showProjectLocationModal() {
 
     const el = document.getElementById("modal-area");
     el.innerHTML = `<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:600px">
-        <div class="modal-title">Ubicación de la Obra<button class="delbtn" onclick="closeModal()">✕</button></div>
-        <div class="info-box" style="margin-bottom:15px">Hacé click en el mapa para marcar la ubicación exacta de la obra.</div>
+        <div class="modal-title">Ubicación del Proyecto<button class="delbtn" onclick="closeModal()">✕</button></div>
+        <div class="info-box" style="margin-bottom:15px">Hacé click en el mapa para marcar la ubicación exacta del proyecto.</div>
         <div id="project-map" class="map-container">
             <div class="map-placeholder">Cargando mapa...</div>
         </div>
@@ -3910,7 +3910,7 @@ function shareProjectLocation() {
     if (!lat || !lng) return toast("No hay ubicación guardada", false);
 
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-    const text = `📍 *Ubicación de Obra: ${p.name}*\nDirección: ${address || 'Ver mapa'}\n\nLink: ${googleMapsUrl}`;
+    const text = `📍 *Ubicación del Proyecto: ${p.name}*\nDirección: ${address || 'Ver mapa'}\n\nLink: ${googleMapsUrl}`;
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     
     window.open(waUrl, '_blank');

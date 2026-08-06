@@ -1,16 +1,16 @@
 {
-  "name": "Puntero — Gestión de Obra",
-  "short_name": "Puntero",
-  "description": "Tu obra, tu mando. Presupuestos, cronogramas y gestión integral de obra hecho en Paraguay.",
+  "name": "Puntero Verde — Gestión Ambiental",
+  "short_name": "Puntero Verde",
+  "description": "Tu proyecto ambiental, tu mando. Presupuestos, monitoreo, cronogramas y gestión integral de proyectos ambientales hecho en Paraguay.",
   "lang": "es-PY",
   "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "categories": ["business", "productivity", "utilities"],
+  "background_color": "#1d7a37",
+  "theme_color": "#1d7a37",
+  "categories": ["business", "productivity", "utilities", "environment"],
   "icons": [
     {
       "src": "icon-192.svg",
@@ -33,7 +33,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Libro de Obra",
+      "name": "Bitácora Ambiental",
       "short_name": "Bitácora",
       "description": "Registrar avance del día",
       "url": "./?section=logs"

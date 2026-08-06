@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Maskable: el contenido importante debe estar dentro del 80% central (safe zone) -->
-  <!-- Background fill todo el cuadrado -->
-  <rect width="512" height="512" fill="#0f172a"/>
-
-  <!-- Sello más chico para respetar safe zone -->
-  <circle cx="256" cy="256" r="160" fill="#0f172a"/>
-  <circle cx="256" cy="256" r="148" fill="none" stroke="#f59e0b" stroke-width="5"/>
-
-  <g transform="translate(256 256) rotate(-30)">
-    <path d="M -96 -7 L 96 -7 L 76 56 L -76 56 Z" fill="#f59e0b" stroke="#c2410c" stroke-width="3"/>
-    <rect x="-10" y="-52" width="20" height="46" rx="4" fill="#78350f"/>
-  </g>
-
-  <g transform="translate(256 256)">
-    <ellipse cx="0" cy="27" rx="69" ry="10" fill="#e2e8f0"/>
-    <path d="M -62 27 Q -62 -40 0 -40 Q 62 -40 62 27 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
-    <path d="M -27 -24 Q 0 -34 27 -24" fill="none" stroke="#cbd5e1" stroke-width="3"/>
-    <circle cx="-45" cy="11" r="5" fill="#94a3b8"/>
-    <circle cx="45" cy="11" r="5" fill="#94a3b8"/>
-  </g>
+  <!-- Maskable: contenido importante dentro del 80% central (safe zone) -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#3f9e4e"/>
+      <stop offset="100%" stop-color="#14572a"/>
+    </radialGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d6f5c8"/>
+      <stop offset="100%" stop-color="#7bd37e"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="170" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="156" fill="none" stroke="#eaffea" stroke-width="6" opacity=".6"/>
+  <path d="M 256 96 C 406 120 438 262 386 342 C 334 422 194 422 122 374 C 224 354 264 284 256 220 C 248 284 210 310 148 330 C 88 272 106 142 256 96 Z" fill="url(#leaf)"/>
+  <path d="M 256 146 C 338 166 358 242 328 310 C 298 378 204 378 158 338 C 222 330 256 274 256 230 C 256 274 232 298 188 306 C 156 268 174 172 256 146 Z" fill="#eaffea" opacity=".85"/>
+  <path d="M 256 155 L 256 362" stroke="#1d7a37" stroke-width="15" stroke-linecap="round"/>
+  <path d="M 256 215 Q 324 194 372 150" fill="none" stroke="#1d7a37" stroke-width="15" stroke-linecap="round"/>
+  <path d="M 256 268 Q 194 255 160 210" fill="none" stroke="#1d7a37" stroke-width="15" stroke-linecap="round"/>
+  <path d="M 256 320 Q 314 306 350 264" fill="none" stroke="#1d7a37" stroke-width="15" stroke-linecap="round"/>
 </svg>

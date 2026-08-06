@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="slate">
+<html lang="es" data-theme="xp">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Puntero — Gestión de Obra</title>
-  <meta name="description" content="Tu obra, tu mando. Presupuestos, cronogramas y gestión integral de obra hecho en Paraguay.">
+  <title>Puntero Verde — Gestión Ambiental</title>
+  <meta name="description" content="Tu proyecto ambiental, tu mando. Presupuestos, monitoreo, cronogramas y gestión integral de proyectos ambientales hecho en Paraguay.">
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="apple-touch-icon" href="icon-192.svg">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#1d7a37">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Puntero">
+  <meta name="apple-mobile-web-app-title" content="Puntero Verde">
   <meta name="mobile-web-app-capable" content="yes">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,74 +27,69 @@
 <body>
 
 <div id="app" class="app-layout">
-  <aside class="sidebar">
-    <div class="side-logo" onclick="setSection('budget')">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-logo" onclick="setSection('budget')" title="Puntero Verde">
       <div class="logo">
-        <svg class="logo-mark" viewBox="0 0 100 100" width="36" height="36" aria-label="Puntero">
-          <circle cx="50" cy="50" r="48" fill="#0f172a"/>
-          <circle cx="50" cy="50" r="44" fill="none" stroke="#f59e0b" stroke-width="1.8"/>
-          <g transform="translate(50 50) rotate(-30)">
-            <path d="M -28 -2 L 28 -2 L 22 16 L -22 16 Z" fill="#f59e0b" stroke="#c2410c" stroke-width="0.8"/>
-            <rect x="-3" y="-15" width="6" height="14" rx="1" fill="#78350f"/>
-          </g>
-          <g transform="translate(50 50)">
-            <ellipse cx="0" cy="8" rx="20" ry="3" fill="#e2e8f0"/>
-            <path d="M -18 8 Q -18 -12 0 -12 Q 18 -12 18 8 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
-            <path d="M -8 -7 Q 0 -10 8 -7" fill="none" stroke="#cbd5e1" stroke-width="0.8"/>
-            <circle cx="-13" cy="3" r="1.3" fill="#94a3b8"/>
-            <circle cx="13" cy="3" r="1.3" fill="#94a3b8"/>
-          </g>
+        <svg class="logo-mark" viewBox="0 0 100 100" width="38" height="38" aria-label="Puntero Verde">
+          <circle cx="50" cy="50" r="48" fill="url(#lgLeafGrad)"/>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#eaffea" stroke-width="1.6" opacity=".6"/>
+          <path d="M 50 20 C 78 26 84 50 76 66 C 68 82 40 82 26 74 C 44 70 52 56 50 46 C 48 56 42 62 30 66 C 20 56 24 32 50 20 Z" fill="#b8f2b0"/>
+          <path d="M 50 28 C 66 32 70 48 64 60 C 58 72 40 72 32 66 C 44 64 50 54 50 46 C 50 54 46 58 38 60 C 32 54 34 34 50 28 Z" fill="#eaffea"/>
+          <path d="M 50 30 L 50 70" stroke="#2f9e44" stroke-width="3" stroke-linecap="round"/>
+          <path d="M 50 42 Q 62 38 70 32" fill="none" stroke="#2f9e44" stroke-width="3" stroke-linecap="round"/>
+          <path d="M 50 52 Q 40 50 34 44" fill="none" stroke="#2f9e44" stroke-width="3" stroke-linecap="round"/>
+          <path d="M 50 62 Q 60 60 66 54" fill="none" stroke="#2f9e44" stroke-width="3" stroke-linecap="round"/>
         </svg>
         <div class="logo-text">
           <div class="logo-name">PUNTERO</div>
-          <div class="logo-tag">GESTIÓN DE OBRA</div>
+          <div class="logo-tag">AMBIENTAL</div>
         </div>
       </div>
     </div>
-    
+
     <div class="side-scroll">
       <div class="nav-group">
         <div class="nav-label">Organización</div>
-        <button id="btn-global-dashboard" class="nbtn on" onclick="setSection('global_dashboard')">🚀 Panel General</button>
-        <button id="btn-projects" class="nbtn" onclick="setSection('projects')">🏢 Mis Proyectos</button>
-        <button id="btn-budget" class="nbtn" onclick="setSection('budget')">📋 Presupuesto</button>
-        <button id="btn-prices" class="nbtn" onclick="setSection('prices')">💰 Base de Precios</button>
+        <button id="btn-global_dashboard" class="nbtn on" onclick="setSection('global_dashboard')"><span class="nico">🚀</span><span class="nvlabel">Panel General</span></button>
+        <button id="btn-projects" class="nbtn" onclick="setSection('projects')"><span class="nico">🏢</span><span class="nvlabel">Mis Proyectos</span></button>
+        <button id="btn-budget" class="nbtn" onclick="setSection('budget')"><span class="nico">📋</span><span class="nvlabel">Presupuesto</span></button>
+        <button id="btn-prices" class="nbtn" onclick="setSection('prices')"><span class="nico">💰</span><span class="nvlabel">Base de Precios</span></button>
       </div>
 
       <div class="nav-group">
-        <div class="nav-label">Seguimiento de Obra</div>
-        <button id="btn-dashboard" class="nbtn" onclick="setSection('dashboard')">🏠 Resumen Obra</button>
-        <button id="btn-schedule" class="nbtn" onclick="setSection('schedule')">📅 Cronograma</button>
-        <button id="btn-logs" class="nbtn" onclick="setSection('logs')">📔 Libro de Obra</button>
-        <button id="btn-contractors" class="nbtn" onclick="setSection('contractors')">👷 Personal y Contratistas</button>
-        <button id="btn-contratos" class="nbtn" onclick="setSection('contratos')">📝 Contratos</button>
+        <div class="nav-label">Gestión de Proyecto</div>
+        <button id="btn-dashboard" class="nbtn" onclick="setSection('dashboard')"><span class="nico">🏠</span><span class="nvlabel">Resumen Proyecto</span></button>
+        <button id="btn-schedule" class="nbtn" onclick="setSection('schedule')"><span class="nico">📅</span><span class="nvlabel">Cronograma</span></button>
+        <button id="btn-logs" class="nbtn" onclick="setSection('logs')"><span class="nico">📔</span><span class="nvlabel">Bitácora</span></button>
+        <button id="btn-contractors" class="nbtn" onclick="setSection('contractors')"><span class="nico">👷</span><span class="nvlabel">Personal y Contratistas</span></button>
+        <button id="btn-contratos" class="nbtn" onclick="setSection('contratos')"><span class="nico">📝</span><span class="nvlabel">Contratos</span></button>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Gestión y Análisis</div>
-        <button id="btn-finances" class="nbtn" onclick="setSection('finances')">💰 Finanzas</button>
-        <button id="btn-performance" class="nbtn" onclick="setSection('performance')">📈 Desempeño</button>
-        <button id="btn-documents" class="nbtn" onclick="setSection('documents')">📁 Planos y Fotos</button>
-        <button id="btn-folder" class="nbtn" onclick="setSection('folder')">📂 Carpeta del Proyecto</button>
-        <button id="btn-suppliers" class="nbtn" onclick="setSection('suppliers')">🚛 Proveedores</button>
-        <button id="btn-themes" class="nbtn" onclick="setSection('themes')">🎨 Temas Visuales</button>
-        <button class="nbtn" onclick="showModal('profile')">👤 Mi Perfil</button>
-        <button id="btn-cloud" class="nbtn" onclick="setSection('cloud')">☁️ Cloud</button>
+        <button id="btn-finances" class="nbtn" onclick="setSection('finances')"><span class="nico">💵</span><span class="nvlabel">Finanzas</span></button>
+        <button id="btn-performance" class="nbtn" onclick="setSection('performance')"><span class="nico">📈</span><span class="nvlabel">Desempeño</span></button>
+        <button id="btn-documents" class="nbtn" onclick="setSection('documents')"><span class="nico">📁</span><span class="nvlabel">Documentos y Fotos</span></button>
+        <button id="btn-folder" class="nbtn" onclick="setSection('folder')"><span class="nico">📂</span><span class="nvlabel">Carpeta del Proyecto</span></button>
+        <button id="btn-suppliers" class="nbtn" onclick="setSection('suppliers')"><span class="nico">🚛</span><span class="nvlabel">Proveedores</span></button>
+        <button id="btn-themes" class="nbtn" onclick="setSection('themes')"><span class="nico">🎨</span><span class="nvlabel">Temas Visuales</span></button>
+        <button class="nbtn" onclick="showModal('profile')"><span class="nico">👤</span><span class="nvlabel">Mi Perfil</span></button>
+        <button id="btn-cloud" class="nbtn" onclick="setSection('cloud')"><span class="nico">☁️</span><span class="nvlabel">Cloud</span></button>
       </div>
     </div>
 
     <div class="side-footer">
-      <button id="auth-btn" class="btn full" onclick="showAuthModal()" style="margin-bottom:6px; font-size:0.8rem">🔐 Iniciar Sesión</button>
-      <button class="btn ok-btn full" onclick="showModal('export_project')">📤 Enviar Proyecto</button>
-      <button class="btn pdf-btn full" onclick="generarPDF()">📄 Generar PDF</button>
-      <button class="btn full" onclick="setSection('documents');setTimeout(function(){var e=document.getElementById('doc-upload');if(e)e.click()},300)" style="margin-top:4px;background:#059669;color:#fff">📁 Cargar Archivo</button>
+      <button id="auth-btn" class="btn full" onclick="showAuthModal()" style="margin-bottom:2px; font-size:0.78rem"><span class="nico">🔐</span><span class="nvlabel">Iniciar Sesión</span></button>
+      <button class="btn ok-btn full" onclick="showModal('export_project')"><span class="nico">📤</span><span class="nvlabel">Enviar Proyecto</span></button>
+      <button class="btn pdf-btn full" onclick="generarPDF()"><span class="nico">📄</span><span class="nvlabel">Generar PDF</span></button>
+      <button class="btn full" onclick="setSection('documents');setTimeout(function(){var e=document.getElementById('doc-upload');if(e)e.click()},300)" style="margin-top:2px;background:rgba(var(--ok-rgb),.12);color:var(--ok);border-color:rgba(var(--ok-rgb),.35)"><span class="nico">📁</span><span class="nvlabel">Cargar Archivo</span></button>
     </div>
   </aside>
 
   <main class="main-content">
     <div class="top-bar">
       <button class="drawer-toggle" onclick="toggleSidebar()" aria-label="Menú">☰</button>
-      <div id="view-title" style="font-family:var(--font-display); font-size:1.2rem; font-weight:800; text-transform:uppercase; color:var(--tx); flex:1">Presupuesto de Obra</div>
+      <div id="view-title" style="font-family:var(--font-display); font-size:1.2rem; font-weight:800; text-transform:uppercase; color:var(--tx); flex:1">Puntero Verde</div>
       <div style="display:flex; align-items:center; gap:10px">
       <div id="currency-area" style="display:flex; align-items:center; gap:10px">
         <!-- Renderizado vía JS en app.js -->
@@ -103,7 +98,7 @@
     </div>
     <div id="section-budget" class="view" style="display:none">
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px; flex-wrap:wrap">
-            <button class="btn sm" onclick="exportToGoogleSheets()" style="background:rgba(15,157,88,.12);border-color:rgba(15,157,88,.4);color:#34d399">
+            <button class="btn sm" onclick="exportToGoogleSheets()" style="background:rgba(15,157,88,.12);border-color:rgba(15,157,88,.4);color:#1d7a37">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="3" y="2" width="18" height="20" rx="2" fill="#0F9D58"/><rect x="6" y="6" width="12" height="12" rx="1" fill="white"/><line x1="6" y1="10" x2="18" y2="10" stroke="#0F9D58" stroke-width="1.5"/><line x1="6" y1="14" x2="18" y2="14" stroke="#0F9D58" stroke-width="1.5"/><line x1="12" y1="6" x2="12" y2="18" stroke="#0F9D58" stroke-width="1.5"/></svg>Exportar Google Sheets
             </button>
             <button class="btn sm" onclick="exportXLS()">📊 Exportar CSV</button>
@@ -140,7 +135,7 @@
 <!-- FAB mobile: acceso rápido a acciones frecuentes -->
 <div class="mobile-fab">
   <div id="fab-items" class="mobile-fab-items closed">
-    <div class="mobile-fab-item" onclick="setSection('logs');closeFab()">📔 Libro de Obra</div>
+    <div class="mobile-fab-item" onclick="setSection('logs');closeFab()">📔 Bitácora</div>
     <div class="mobile-fab-item" onclick="setSection('contractors');closeFab()">👷 Contratistas</div>
     <div class="mobile-fab-item" onclick="setSection('documents');closeFab()">📁 Fotos</div>
     <div class="mobile-fab-item" onclick="generarPDF();closeFab()" style="color:var(--acc)">📄 PDF</div>

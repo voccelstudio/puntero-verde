@@ -521,7 +521,7 @@ function generarPDFContrato(id) {
   function addFooter() {
     doc.setFontSize(8);
     doc.setTextColor(120);
-    doc.text('Puntero — Gestión de Obra | Contrato generado el ' + fechaHoy + ' | Pág. ' + pageNum, margin, 292);
+    doc.text('Puntero Verde — Gestión Ambiental | Contrato generado el ' + fechaHoy + ' | Pág. ' + pageNum, margin, 292);
   }
 
   function checkPage() {

@@ -56,7 +56,7 @@ function renderResources() {
         </div>
 
         <div class="card" style="margin-top:20px">
-            <h3 class="sec-lbl">Plantillas de Obra</h3>
+            <h3 class="sec-lbl">Plantillas de Proyectos</h3>
             <p style="font-size:0.85rem; color:var(--tx3); margin-bottom:15px">Cargá conjuntos de rubros predefinidos para acelerar tu presupuesto.</p>
             <div class="tmpl-grid">
                 ${tmplCards}
