@@ -189,8 +189,8 @@ function buildDB() {
   const db = {};
   for (const [cat, items] of Object.entries(DB_RAW)) {
     db[cat] = {};
-    const pct = LABOR_PCT[cat] || 30;
     for (const [name, item] of Object.entries(items)) {
+      const pct = item.lp != null ? item.lp : (LABOR_PCT[cat] || 30);
       const lab = Math.round(item.m * pct / 100);
       db[cat][name] = { unit: item.u, matCost: item.m, laborCost: lab, laborPct: pct, total: item.m + lab, mats: item.mats || [], y: item.y || null };
     }
@@ -201,11 +201,11 @@ let DB = buildDB();
 
 // ── STATE ──────────────────────────────────────────────────────────────
 let state = {
-  section: "budget", expandedCat: "ESTRUCTURAS", search: "", items: [],
+  section: "budget", expandedCat: "INGENIERÍA AMBIENTAL", search: "", items: [],
   projectName: "Nuevo Proyecto", clientName: "", clientPhone: "", clientAddress: "",
   profitPct: 0, validDays: 30, budgetNum: 1, notes: "", pdfShowBreakdown: false,
   priceEditMode: "total", editPriceKey: null, editField: "total", activeBudgetId: null,
-  theme: "xp",
+  theme: "aero",
   ivaEnabled: false, ivaEnPDF: false,
   adjustPct: 0,
   profile: { company: "", professional: "", matricula: "", ruc: "", phone: "", email: "", address: "", instagram: "", whatsapp: "", website: "" },
@@ -246,9 +246,8 @@ try {
   var s = localStorage.getItem("ppy_v5");
   if (s) {
     Object.assign(state, JSON.parse(s));
-  } else {
-    loadDemoProject();
   }
+  if (state.theme !== "aero") state.theme = "aero"; // Aero-Eco es el único tema
   migrateToMultiProject();
 } catch (e) { }
 
@@ -1114,7 +1113,7 @@ function stopWorkspaceListener() {
 }
 
 function applyTheme(t) {
-  document.documentElement.setAttribute("data-theme", t || "xp");
+  document.documentElement.setAttribute("data-theme", t || "aero");
 }
 
 let _tt = null;
@@ -2116,34 +2115,17 @@ function applyGlobalAdjust() {
 
 // ── THEMES SECTION ────────────────────────────────────────────────────
 const THEMES = [
-  { id: "xp", name: "Puntero Verde XP", desc: "Windows XP, verde esmeralda", prev: { bg: "#cfeccf", sur: "#f2f8f0", acc: "#1d7a37", row: "#e4f1e2" } },
   { id: "aero", name: "Aero-Eco", desc: "Frutiger Aero: vidrio, brillos y agua", prev: { bg: "#dceefc", sur: "#ffffff", acc: "#005fac", row: "#e9f4fd" } },
-  { id: "dark", name: "Constructor Dark", desc: "Oscuro ámbar", prev: { bg: "#0f1117", sur: "#181c26", acc: "#f59e0b", row: "#1e2330" } },
-  { id: "light", name: "Proyecto de Día", desc: "Claro terracota", prev: { bg: "#f4f1eb", sur: "#ffffff", acc: "#c2410c", row: "#f9f7f3" } },
-  { id: "blueprint", name: "Plano Técnico", desc: "Azul blueprint", prev: { bg: "#071525", sur: "#0c1f35", acc: "#38bdf8", row: "#102846" } },
-  { id: "elegant", name: "Estudio Elegante", desc: "Beige y dorado", prev: { bg: "#faf8f5", sur: "#ffffff", acc: "#8b6914", row: "#f5f2ed" } },
-  { id: "neon", name: "Noche Neón", desc: "Dark ultravioleta", prev: { bg: "#050508", sur: "#0d0d14", acc: "#a855f7", row: "#12121c" } },
-  { id: "forest", name: "Bosque", desc: "Verde selva oscuro", prev: { bg: "#0d1a12", sur: "#132018", acc: "#4ade80", row: "#192a1f" } },
-  { id: "copper", name: "Cobre", desc: "Dark naranja cálido", prev: { bg: "#1a0f0a", sur: "#26160e", acc: "#fb923c", row: "#301c12" } },
-  { id: "midnight", name: "Midnight", desc: "GitHub dark", prev: { bg: "#010409", sur: "#0d1117", acc: "#58a6ff", row: "#161b22" } },
-  { id: "sand", name: "Arena", desc: "Claro cálido", prev: { bg: "#f7f3ee", sur: "#fffdf9", acc: "#b45309", row: "#f0ebe3" } },
-  { id: "crimson", name: "Carmesí", desc: "Dark rojo intenso", prev: { bg: "#0f0508", sur: "#1a0a0f", acc: "#f43f5e", row: "#220e14" } },
-  { id: "slate", name: "Pizarra", desc: "Claro minimalista", prev: { bg: "#f8fafc", sur: "#ffffff", acc: "#0f172a", row: "#f1f5f9" } },
-  { id: "obsidian", name: "Obsidiana", desc: "Negro puro mono", prev: { bg: "#09090b", sur: "#18181b", acc: "#e4e4e7", row: "#1f1f23" } },
 ];
 
 const PDF_THEMES = [
-  { id: "corporate", name: "Corporativo", desc: "Azul profesional", bg: "#1e3a5f", sur: "#ffffff", acc: "#1e40af", row: "#eef2ff" },
-  { id: "construction", name: "Construcción", desc: "Tierra y naranja", bg: "#7c2d12", sur: "#fffbf5", acc: "#c2410c", row: "#fef3e8" },
-  { id: "minimal", name: "Minimalista", desc: "Blanco y negro", bg: "#111111", sur: "#ffffff", acc: "#111111", row: "#f5f5f5" },
   { id: "emerald", name: "Esmeralda", desc: "Verde ejecutivo", bg: "#064e3b", sur: "#f0fdf4", acc: "#059669", row: "#ecfdf5" },
-  { id: "bordeaux", name: "Burdeos", desc: "Vino elegante", bg: "#4c0519", sur: "#fff1f2", acc: "#9f1239", row: "#ffe4e6" },
-  { id: "slate", name: "Pizarra", desc: "Gris moderno", bg: "#1e293b", sur: "#f8fafc", acc: "#475569", row: "#f1f5f9" },
 ];
 
 function renderThemes() {
   const el = document.getElementById("section-themes");
   if (!el) return;
+  if (!PDF_THEMES.some(t => t.id === state.pdfTheme)) state.pdfTheme = PDF_THEMES[0].id;
 
   let appCards = THEMES.map(t => {
     const p = t.prev; const isActive = state.theme === t.id;
@@ -3497,53 +3479,6 @@ function saveSignature() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
-function loadDemoProject() {
-  // Crear directamente en el modelo nuevo (multi-proyecto)
-  const demoProj = {
-    id: 'p_demo_' + Date.now(),
-    name: "Residencia Demo - San Bernardino",
-    client: "Juan Pérez",
-    phone: "0981 555 000",
-    address: "San Bernardino, Cordillera",
-    m2Area: 120,
-    date: formatDatePY(new Date()),
-    status: 'active',
-    activeAdendaId: 'main',
-    budgets: [{
-      id: 'main',
-      name: 'Presupuesto Principal',
-      profitPct: 0,
-      ivaEnabled: false,
-      notes: "",
-      items: [
-        { id: 101, cat: "ESTRUCTURAS", name: "Zapata fck=18 MPa", unit: "m3", qty: 4, unitPrice: 2554380, matCost: 1851000, laborCost: 703380, mats: [], disc: 0, note: "" },
-        { id: 102, cat: "MAMPOSTERÍA", name: "Elevación 0.15m ladrillo común", unit: "m2", qty: 120, unitPrice: 125000, matCost: 91838, laborCost: 33162, mats: [], disc: 0, note: "" }
-      ]
-    }],
-    execution: {
-      schedules: {
-        "101": { status: "done", start: "2026-04-01", end: "2026-04-10", contractorId: "con_demo_1" },
-        "102": { status: "progress", start: "2026-04-12", end: "2026-04-30", contractorId: "con_demo_1" }
-      },
-      dailyLogs: [],
-      finances: { income: [], expenses: [] },
-      documents: [],
-      projectStartDate: "2026-04-01",
-      projectEndDate: ""
-    }
-  };
-
-  state.projects = [demoProj];
-  state.activeProjectId = demoProj.id;
-  state.activeAdendaId = 'main';
-  state.migratedV6 = true; // ya está en formato nuevo
-
-  state.contractors = [
-    { id: "con_demo_1", name: "Maestro Pintos", phone: "0981 000 111", specialty: "Albañilería y Estructura", email: "pintos_obras@gmail.com", notes: "Excelente para cimientos y mampostería. Muy puntual.", payments: [{amount: 2000000, date: "2026-04-20", note: "Anticipo inicio obra"}], staff: [] },
-    { id: "con_demo_2", name: "Juan 'Chapuza' González", phone: "0971 222 333", specialty: "Instalaciones", notes: "Malas terminaciones y deja la obra a medias.", payments: [], staff: [] }
-  ];
-}
-
 function renderCurrencyArea() {
     const el = document.getElementById("currency-area");
     if (!el) return;

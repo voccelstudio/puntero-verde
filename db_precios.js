@@ -11,8 +11,8 @@
  * Actualizado: Marzo 2026
  */
 
-const DB_VERSION = "2026-05-ampliacion-cercos-veredas-herreria-pinturas-durlock";
-const DB_FECHA   = "Mayo 2026 (+ tabiques 70mm/curvo/Superboard + cercos + veredas + pinturas industriales + herrería ornamental)";
+const DB_VERSION = "2026-08-ingenieria-ambiental";
+const DB_FECHA   = "Agosto 2026 (+ categoría INGENIERÍA AMBIENTAL: estudios, forestación, agua y saneamiento, residuos, bioingeniería)";
 
 // ── PRECIOS UNITARIOS DE MATERIALES (referencia interna) ──────────────────
 // Rango A-B documentado en comentarios para transparencia interna
@@ -605,6 +605,9 @@ const LABOR_PCT = {
   "PINTURAS INDUSTRIALES":   45,
   // Herrería ornamental: fabricación, soldadura, pintura, montaje → ~40%
   "HERRERÍA ORNAMENTAL":     40,
+  // Ingeniería ambiental: obras con alta MO (plantaciones, saneamiento) → ~40%
+  // Los servicios profesionales (estudios/monitoreos) usan lp:0 (monto llave)
+  "INGENIERÍA AMBIENTAL":    40,
 };
 
 // ── IVA POR TIPO ──────────────────────────────────────────────────────────
@@ -619,6 +622,139 @@ const IVA_LAB = 0.05;
 
 const DB_RAW = {
 
+// ════════════════════════════════════════════════════════════════════════
+"INGENIERÍA AMBIENTAL": {
+// ════════════════════════════════════════════════════════════════════════
+  // ── Estudios y monitoreo (servicios profesionales, monto llave) ──
+  "Estudio de Impacto Ambiental (EIA)": {
+    u:"un", m:8000000, y:1, lp:0,
+    // Servicio profesional: línea base, predicción de impactos y medidas
+  },
+  "Plan de Manejo Ambiental (PMA)": {
+    u:"un", m:4000000, y:1, lp:0,
+    // Programa de mitigación, monitoreo y seguimiento ambiental
+  },
+  "Monitoreo de calidad de agua (jornada + informe)": {
+    u:"un", m:1500000, y:2, lp:0,
+    // Muestreo in situ, cadena de custodia e informe de resultados
+  },
+  "Monitoreo de calidad de aire (jornada + informe)": {
+    u:"un", m:1200000, y:2, lp:0,
+  },
+  "Análisis físico-químico de suelo (muestra + informe)": {
+    u:"un", m:350000, y:8, lp:0,
+  },
+  "Auditoría ambiental (jornada profesional)": {
+    u:"un", m:2500000, y:1, lp:0,
+  },
+  "Inventario de emisiones GEI (alcances 1 y 2)": {
+    u:"un", m:4500000, y:1, lp:0,
+  },
+
+  // ── Forestación y restauración ──
+  "Plantación de árbol nativo (c/ tutor y riego)": {
+    u:"un", m:45000, y:60,
+    mats:[
+      {n:"Tierra gorda",q:0.05,u:"m3"},
+    ]
+  },
+  "Cortina forestal / barrera rompevientos": {
+    u:"ml", m:16000, y:50,
+  },
+  "Forestación de 1 hectárea (plantación y mantenimiento inicial)": {
+    u:"ha", m:42000000, y:0.25,
+  },
+  "Revegetación de taludes (hidrosiembra)": {
+    u:"m2", m:18000, y:60,
+  },
+  "Cespedización / tapiz herbáceo": {
+    u:"m2", m:15000, y:80,
+  },
+  "Cerca viva con especies nativas": {
+    u:"ml", m:18000, y:40,
+  },
+
+  // ── Agua y saneamiento ambiental ──
+  "Cámara séptica de mampostería": {
+    u:"un", m:2800000, y:1,
+    mats:[
+      {n:"Cemento tipo 1",q:120,u:"kg"},
+      {n:"Arena lavada",q:0.25,u:"m3"},
+    ]
+  },
+  "Pozo absorbente (excavación, cámara y relleno)": {
+    u:"un", m:1600000, y:1,
+  },
+  "Humedal construido para tratamiento de efluentes": {
+    u:"m2", m:950000, y:4,
+  },
+  "Sistema de captación de agua de lluvia (cisterna 10.000 L)": {
+    u:"un", m:7000000, y:1,
+  },
+  "Sistema de riego por goteo (huerta/jardín)": {
+    u:"m2", m:26000, y:40,
+  },
+  "Perforación de pozo de agua (profundidad)": {
+    u:"ml", m:220000, y:2,
+  },
+  "Sistema de bombeo solar fotovoltaico": {
+    u:"un", m:12500000, y:1,
+  },
+  "Tratamiento y reúso de aguas grises": {
+    u:"un", m:4500000, y:1,
+  },
+
+  // ── Residuos y economía circular ──
+  "Compostera doméstica (1 m³)": {
+    u:"un", m:400000, y:2,
+  },
+  "Huerta orgánica (preparación + siembra)": {
+    u:"m2", m:30000, y:30,
+  },
+  "Punto Verde / estación de reciclaje": {
+    u:"un", m:3000000, y:1,
+  },
+  "Recolección y transporte de residuos (viaje)": {
+    u:"viaje", m:250000, y:4,
+  },
+  "Disposición final en relleno sanitario": {
+    u:"tn", m:180000, y:5,
+  },
+
+  // ── Bioingeniería y control de erosión ──
+  "Gaviones de retención (rellenados)": {
+    u:"m3", m:480000, y:1,
+  },
+  "Estabilización de taludes con cobertura vegetal": {
+    u:"m2", m:90000, y:10,
+  },
+  "Control de erosión con geotextil": {
+    u:"m2", m:40000, y:50,
+  },
+  "Cuneta de drenaje pluvial (de piedra)": {
+    u:"ml", m:125000, y:8,
+  },
+  "Recuperación de suelo degradado (enmienda + siembra)": {
+    u:"m2", m:24000, y:40,
+  },
+
+  // ── Mantenimiento y energía ambiental ──
+  "Mantenimiento de espacios verdes": {
+    u:"m2", m:3500, y:200,
+  },
+  "Poda de formación de árboles": {
+    u:"un", m:130000, y:4,
+  },
+  "Iluminación solar LED (kit instalado)": {
+    u:"un", m:480000, y:4,
+  },
+  "Calentador solar de agua": {
+    u:"un", m:4400000, y:1,
+  },
+  "Vivero de especies nativas (invernáculo 50 m²)": {
+    u:"un", m:9000000, y:1,
+  },
+},
 // ════════════════════════════════════════════════════════════════════════
 "ESTRUCTURAS": {
 // ════════════════════════════════════════════════════════════════════════
@@ -4267,8 +4403,8 @@ function buildDB(raw = DB_RAW, laborPct = LABOR_PCT) {
   const db = {};
   for (const [cat, items] of Object.entries(raw)) {
     db[cat] = {};
-    const pct = laborPct[cat] || 30;
     for (const [name, item] of Object.entries(items)) {
+      const pct = item.lp != null ? item.lp : (laborPct[cat] || 30);
       const lab = Math.round(item.m * pct / 100);
       db[cat][name] = {
         unit:      item.u,

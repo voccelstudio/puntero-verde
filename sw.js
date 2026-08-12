@@ -4,7 +4,7 @@
  * Permite uso offline en obra cuando no hay señal.
  */
 
-const CACHE_NAME = 'puntero-verde-v5-aero';
+const CACHE_NAME = 'puntero-verde-v6-aero-clean';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
